@@ -212,58 +212,63 @@ class _ReservationScreenState extends State<ReservationScreen> {
     const labels = ['Tanggal', 'Waktu', 'Meja', 'Konfirmasi'];
     return Container(
       color: isDark ? AppColors.darkSurface : Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
-        children: List.generate(labels.length, (i) {
-          final active = i == _step;
-          final done = i < _step;
-          return Expanded(
-            child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(labels.length * 2 - 1, (i) {
+          // Even indices → step circles; odd indices → connector lines
+          if (i.isOdd) {
+            final stepIndex = i ~/ 2;
+            final isDone = stepIndex < _step;
+            return Expanded(
+              child: Container(
+                height: 2,
+                color: isDone ? AppColors.secondaryOrange : AppColors.lightDivider,
+              ),
+            );
+          }
+          final idx = i ~/ 2;
+          final active = idx == _step;
+          final done = idx < _step;
+          return SizedBox(
+            width: 56,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                if (i > 0)
-                  Expanded(
-                    child: Container(
-                        height: 2,
-                        color: done ? AppColors.secondaryOrange : AppColors.lightDivider),
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: active
+                        ? AppColors.secondaryOrange
+                        : done
+                            ? AppColors.secondaryOrangeLight
+                            : isDark ? AppColors.darkDivider : AppColors.lightDivider,
                   ),
-                Column(
-                  children: [
-                    Container(
-                      width: 30, height: 30,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: active
-                            ? AppColors.secondaryOrange
-                            : done
-                                ? AppColors.secondaryOrangeLight
-                                : isDark ? AppColors.darkDivider : AppColors.lightDivider,
-                      ),
-                      child: Center(
-                        child: done
-                            ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
-                            : Text('${i + 1}',
-                                style: TextStyle(
-                                    color: active ? Colors.white : Colors.grey,
-                                    fontFamily: 'Outfit',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12)),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(labels[i],
-                        style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 9,
-                            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-                            color: active ? AppColors.secondaryOrange : Colors.grey)),
-                  ],
+                  child: Center(
+                    child: done
+                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 14)
+                        : Text('${idx + 1}',
+                            style: TextStyle(
+                                color: active ? Colors.white : Colors.grey,
+                                fontFamily: 'Outfit',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12)),
+                  ),
                 ),
-                if (i < labels.length - 1)
-                  Expanded(
-                    child: Container(
-                        height: 2,
-                        color: done ? AppColors.secondaryOrange : AppColors.lightDivider),
+                const SizedBox(height: 3),
+                Text(
+                  labels[idx],
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 9,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                    color: active ? AppColors.secondaryOrange : Colors.grey,
                   ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           );

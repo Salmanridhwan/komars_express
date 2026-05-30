@@ -51,12 +51,13 @@ class _TableManagementScreenState extends State<TableManagementScreen>
           } else {
             await _dao.update(table);
           }
-          Navigator.pop(ctx, true);
+          if (ctx.mounted) Navigator.pop(ctx, true);
         },
       ),
     );
     if (result == true) _load();
   }
+
 
   Future<void> _deactivate(TableModel table) async {
     final confirm = await showDialog<bool>(

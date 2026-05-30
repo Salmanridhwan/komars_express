@@ -81,15 +81,13 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.pushNamed(context, AppRoutes.reservation);
-          _load();
-        },
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context, AppRoutes.home, (route) => false),
         backgroundColor: AppColors.secondaryOrange,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Buat Reservasi', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
+        tooltip: 'Kembali ke Beranda',
+        child: const Icon(Icons.home_rounded, size: 28),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
