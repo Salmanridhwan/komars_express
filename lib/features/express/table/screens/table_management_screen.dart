@@ -21,7 +21,7 @@ class TableManagementScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.12),
+                  color: Colors.blueGrey.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

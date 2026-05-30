@@ -235,17 +235,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Logout Button
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.deleteRed.withOpacity(0.1),
-                      foregroundColor: AppColors.deleteRed,
-                      elevation: 0,
-                      side: const BorderSide(color: AppColors.deleteRed, width: 1),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.deleteRed.withValues(alpha: 0.1),
+                        foregroundColor: AppColors.deleteRed,
+                        elevation: 0,
+                        side: const BorderSide(color: AppColors.deleteRed, width: 1),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                    ).build(
-                      context,
                       onPressed: _logout,
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -336,7 +336,7 @@ class _ProfileMenuRow extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: color, size: 20),

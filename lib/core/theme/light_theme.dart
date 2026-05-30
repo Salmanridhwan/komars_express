@@ -75,11 +75,12 @@ ThemeData buildLightTheme() {
       ),
       iconTheme: const IconThemeData(color: AppColors.lightTextPrimary),
     ),
-    cardTheme: CardTheme(
-      color: AppColors.lightSurface,
-      elevation: 2,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    cardTheme: const CardThemeData(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
       margin: EdgeInsets.zero,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(

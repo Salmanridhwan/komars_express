@@ -75,7 +75,7 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
                           color: isDark ? AppColors.darkCard : AppColors.qrisLightBlue,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark ? AppColors.darkDivider : AppColors.qrisBlue.withOpacity(0.2),
+                            color: isDark ? AppColors.darkDivider : AppColors.qrisBlue.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Column(
@@ -129,7 +129,7 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -169,20 +169,20 @@ class _QrisPaymentScreenState extends State<QrisPaymentScreen> {
                       // Simulator Button
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryGreen,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
-                        ).build(
-                          context,
                           onPressed: _simulatePaymentSuccess,
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle_rounded),
+                              Icon(Icons.check_circle_outline_rounded),
                               SizedBox(width: 8),
                               Text(
                                 'Simulasi Pembayaran Berhasil',

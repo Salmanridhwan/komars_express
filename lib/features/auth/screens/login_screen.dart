@@ -91,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
                 TextFormField(
-                  id: 'login_email_field',
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
@@ -106,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  id: 'login_password_field',
                   controller: _passCtrl,
                   obscureText: _obscure,
                   decoration: InputDecoration(
@@ -130,7 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    id: 'login_button',
                     onPressed: _loading ? null : _login,
                     child: _loading
                         ? const SizedBox(

@@ -1,4 +1,5 @@
 import '../database/database_helper.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SeedData {
   SeedData._();

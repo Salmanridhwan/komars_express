@@ -41,16 +41,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    StatusBadgeType badgeType;
+    String statusText = "";
     switch (widget.order.status) {
       case 'Lunas':
-        badgeType = StatusBadgeType.success;
+        statusText = "Selesai";
         break;
       case 'Dibatalkan':
-        badgeType = StatusBadgeType.cancelled;
+        statusText = "Dibatalkan";
         break;
       default:
-        badgeType = StatusBadgeType.pending;
+        statusText = "Menunggu Pembayaran";
     }
 
     return Scaffold(
@@ -79,7 +79,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               widget.order.orderCode,
@@ -89,7 +89,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            StatusBadge(text: widget.order.status, type: badgeType),
+                            StatusBadge(status: statusText),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -201,7 +201,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: Column(
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
                               'Total Belanja',
@@ -215,7 +215,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(height: 8),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
                               'Biaya Layanan',
@@ -229,7 +229,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const Divider(height: 24),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.between,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text(
                               'Total Bayar',
@@ -267,7 +267,7 @@ class _InfoRow extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.between,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,

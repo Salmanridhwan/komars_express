@@ -21,7 +21,7 @@ class ReservationScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.statusPending.withOpacity(0.12),
+                  color: AppColors.statusPending.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

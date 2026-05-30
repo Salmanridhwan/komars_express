@@ -219,7 +219,7 @@ class _CartScreenState extends State<CartScreen> {
                                           child: Container(
                                             padding: const EdgeInsets.all(4),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey[300]?.withOpacity(0.5),
+                                              color: Colors.grey[300]?.withValues(alpha: 0.5),
                                               shape: BoxShape.circle,
                                             ),
                                             child: const Icon(Icons.remove, size: 16),
@@ -270,7 +270,7 @@ class _CartScreenState extends State<CartScreen> {
                     color: isDark ? AppColors.darkSurface : Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withValues(alpha: 0.06),
                         blurRadius: 10,
                         offset: const Offset(0, -4),
                       ),
@@ -282,7 +282,7 @@ class _CartScreenState extends State<CartScreen> {
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.between,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Total Pembelian',

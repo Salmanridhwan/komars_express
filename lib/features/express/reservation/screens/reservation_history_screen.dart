@@ -21,7 +21,7 @@ class ReservationHistoryScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.statusActive.withOpacity(0.12),
+                  color: AppColors.statusActive.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

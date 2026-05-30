@@ -108,16 +108,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     final order = _orders[index];
                     
                     // Map statuses to BadgeType
-                    StatusBadgeType badgeType;
+                    String statusText = "";
                     switch (order.status) {
                       case 'Lunas':
-                        badgeType = StatusBadgeType.success;
+                        statusText = "Selesai";
                         break;
                       case 'Dibatalkan':
-                        badgeType = StatusBadgeType.cancelled;
+                        statusText = "Dibatalkan";
                         break;
                       default:
-                        badgeType = StatusBadgeType.pending;
+                        statusText = "Menunggu Pembayaran";
                     }
 
                     return Container(
@@ -146,7 +146,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                             children: [
                               // Order code and status badge
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.between,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     order.orderCode,
@@ -157,8 +157,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                     ),
                                   ),
                                   StatusBadge(
-                                    text: order.status,
-                                    type: badgeType,
+                                    status: statusText,
                                   ),
                                 ],
                               ),
@@ -179,7 +178,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
                               // Amount and options
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.between,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,

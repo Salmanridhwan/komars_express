@@ -1,4 +1,4 @@
-import '../../models/user_model.dart';
+import '../models/user_model.dart';
 import '../../../../core/database/database_helper.dart';
 
 class UserDao {

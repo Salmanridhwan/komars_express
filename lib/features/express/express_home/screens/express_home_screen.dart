@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/routes/app_routes.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/routes/app_routes.dart';
 
 class ExpressHomeScreen extends StatelessWidget {
   const ExpressHomeScreen({super.key});
@@ -60,7 +60,7 @@ class ExpressHomeScreen extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -201,13 +201,13 @@ class _ExpressCard extends StatelessWidget {
           boxShadow: [
             if (!isDark)
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
           ],
           border: Border.all(
-            color: isDark ? AppColors.darkDivider : AppColors.lightDivider.withOpacity(0.5),
+            color: isDark ? AppColors.darkDivider : AppColors.lightDivider.withValues(alpha: 0.5),
           ),
         ),
         child: Column(
@@ -217,7 +217,7 @@ class _ExpressCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24),

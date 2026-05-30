@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
@@ -13,6 +15,18 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDb() async {
+    if (kIsWeb) {
+      var factory = databaseFactoryFfiWeb;
+      return await factory.openDatabase(
+        'komars.db',
+        options: OpenDatabaseOptions(
+          version: 1,
+          onConfigure: _onConfigure,
+          onCreate: _onCreate,
+        ),
+      );
+    }
+
     final path = join(await getDatabasesPath(), 'komars.db');
     return await openDatabase(
       path,

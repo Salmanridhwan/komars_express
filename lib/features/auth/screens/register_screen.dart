@@ -76,7 +76,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 32),
               TextFormField(
-                id: 'reg_name_field',
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
                     labelText: AppStrings.name,
@@ -86,7 +85,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
               TextFormField(
-                id: 'reg_email_field',
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
@@ -100,7 +98,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
               TextFormField(
-                id: 'reg_phone_field',
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
@@ -109,7 +106,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
               TextFormField(
-                id: 'reg_password_field',
                 controller: _passCtrl,
                 obscureText: _obscure,
                 decoration: InputDecoration(
@@ -130,7 +126,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 14),
               TextFormField(
-                id: 'reg_confirm_field',
                 controller: _confirmCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
@@ -147,7 +142,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  id: 'register_button',
                   onPressed: _loading ? null : _register,
                   child: _loading
                       ? const SizedBox(

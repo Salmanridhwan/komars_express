@@ -151,7 +151,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
 
                   // Menu Title & Price
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
@@ -210,7 +210,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                         border: Border.all(
                           color: isDark
                               ? AppColors.darkDivider
-                              : AppColors.primaryGreen.withOpacity(0.2),
+                              : AppColors.primaryGreen.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(

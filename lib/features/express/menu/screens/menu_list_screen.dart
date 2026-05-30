@@ -140,7 +140,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                     backgroundColor: isDark ? AppColors.darkCard : Colors.grey[200],
-                    borderSide: BorderSide.none,
+                    side: BorderSide.none,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -230,7 +230,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
               color: isDark ? AppColors.darkSurface : Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -240,7 +240,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.between,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   mainAxisSize: MainAxisSize.min,

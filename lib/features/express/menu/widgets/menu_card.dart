@@ -85,13 +85,13 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
             boxShadow: [
               if (!isDark)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
             ],
             border: Border.all(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider.withOpacity(0.5),
+              color: isDark ? AppColors.darkDivider : AppColors.lightDivider.withValues(alpha: 0.5),
             ),
           ),
           child: Column(
@@ -157,7 +157,7 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                         ),
                         child: const Center(
@@ -247,7 +247,7 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
 
                     // Price & Cart Button
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.between,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           CurrencyFormatter.format(widget.item.price),
