@@ -29,22 +29,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (exists) {
       setState(() => _loading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email sudah terdaftar.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Email sudah terdaftar.')));
       return;
     }
-    await dao.register(UserModel(
-      name: _nameCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-      phoneNumber: _phoneCtrl.text.trim(),
-    ));
+    await dao.register(
+      UserModel(
+        name: _nameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text.trim(),
+        phoneNumber: _phoneCtrl.text.trim(),
+      ),
+    );
     setState(() => _loading = false);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(AppStrings.registerSuccess)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text(AppStrings.registerSuccess)));
     Navigator.pushReplacementNamed(context, AppRoutes.login);
   }
 
@@ -69,17 +71,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Buat Akun Baru 🌱',
-                  style: Theme.of(context).textTheme.displayMedium),
+              Text(
+                'Buat Akun Baru 🌱',
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
               const SizedBox(height: 8),
-              Text('Bergabung dengan ekosistem Farm-to-Table',
-                  style: Theme.of(context).textTheme.bodyMedium),
+              Text(
+                'Bergabung dengan ekosistem Farm-to-Table',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               const SizedBox(height: 32),
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
-                    labelText: AppStrings.name,
-                    prefixIcon: Icon(Icons.person_outline_rounded)),
+                  labelText: AppStrings.name,
+                  prefixIcon: Icon(Icons.person_outline_rounded),
+                ),
                 validator: (v) =>
                     (v == null || v.isEmpty) ? AppStrings.required : null,
               ),
@@ -88,8 +95,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                    labelText: AppStrings.email,
-                    prefixIcon: Icon(Icons.email_outlined)),
+                  labelText: AppStrings.email,
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return AppStrings.required;
                   if (!v.contains('@')) return 'Email tidak valid';
@@ -101,8 +109,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
-                    labelText: AppStrings.phoneNumber,
-                    prefixIcon: Icon(Icons.phone_outlined)),
+                  labelText: AppStrings.phoneNumber,
+                  prefixIcon: Icon(Icons.phone_outlined),
+                ),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -112,9 +121,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   labelText: AppStrings.password,
                   prefixIcon: const Icon(Icons.lock_outline_rounded),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined),
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -129,8 +140,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _confirmCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                    labelText: AppStrings.confirmPassword,
-                    prefixIcon: Icon(Icons.lock_outline_rounded)),
+                  labelText: AppStrings.confirmPassword,
+                  prefixIcon: Icon(Icons.lock_outline_rounded),
+                ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return AppStrings.required;
                   if (v != _passCtrl.text) return 'Kata sandi tidak cocok';
@@ -145,9 +157,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _loading ? null : _register,
                   child: _loading
                       ? const SizedBox(
-                          width: 22, height: 22,
+                          width: 22,
+                          height: 22,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2.5, color: Colors.white))
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
                       : const Text(AppStrings.register),
                 ),
               ),
@@ -155,16 +171,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppStrings.alreadyHaveAccount,
-                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    AppStrings.alreadyHaveAccount,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Text(AppStrings.login,
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          color: AppColors.primaryGreen,
-                          fontWeight: FontWeight.w600,
-                        )),
+                    child: const Text(
+                      AppStrings.login,
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        color: AppColors.primaryGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ],
               ),

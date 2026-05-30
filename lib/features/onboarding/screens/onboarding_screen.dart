@@ -90,22 +90,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     }),
                   ),
                   const SizedBox(height: 32),
-                  Row(
-                    children: [
-                      if (_currentPage < _pages.length - 1) ...[
-                        TextButton(
-                          onPressed: _finish,
-                          child: Text(
-                            AppStrings.skip,
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 16,
-                            ),
+                  if (_currentPage < _pages.length - 1) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: _finish,
+                        child: Text(
+                          AppStrings.skip,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 16,
                           ),
                         ),
-                        const Spacer(),
-                        ElevatedButton(
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        width: 140,
+                        child: ElevatedButton(
                           onPressed: () => _pageCtrl.nextPage(
                             duration: const Duration(milliseconds: 400),
                             curve: Curves.easeInOut,
@@ -114,36 +119,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.primaryGreen,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
-                          ),
-                          child: const Text(AppStrings.next,
-                              style: TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontWeight: FontWeight.w600)),
-                        ),
-                      ] else ...[
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _finish,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.primaryGreen,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50)),
+                              horizontal: 32,
+                              vertical: 14,
                             ),
-                            child: const Text(AppStrings.getStarted,
-                                style: TextStyle(
-                                    fontFamily: 'Outfit',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                          child: const Text(
+                            AppStrings.next,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ],
-                    ],
-                  ),
+                      ),
+                    ),
+                  ] else ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _finish,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primaryGreen,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        child: const Text(
+                          AppStrings.getStarted,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -214,9 +231,10 @@ class _OnboardingData {
   final String title;
   final String subtitle;
   final LinearGradient gradient;
-  const _OnboardingData(
-      {required this.icon,
-      required this.title,
-      required this.subtitle,
-      required this.gradient});
+  const _OnboardingData({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.gradient,
+  });
 }

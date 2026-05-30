@@ -81,23 +81,28 @@ class RouteGenerator {
       case AppRoutes.reservation:
         return _slide(const ReservationScreen());
       case AppRoutes.reservationConfirmation:
-        return _slide(ReservationConfirmationScreen(reservationId: args as int));
+        return _slide(
+          ReservationConfirmationScreen(reservationId: args as int),
+        );
       case AppRoutes.reservationHistory:
         return _slide(const ReservationHistoryScreen());
       case AppRoutes.reservationDetail:
-        return _slide(ReservationDetailScreen(reservation: args as ReservationModel));
+        return _slide(
+          ReservationDetailScreen(reservation: args as ReservationModel),
+        );
       case AppRoutes.tableManagement:
         return _slide(const TableManagementScreen());
 
       case AppRoutes.farmHome:
         return _slide(const FarmHomeScreen());
       case AppRoutes.farmFinanceHistory:
-        return _slide(const FinanceHistoryScreen());
+        final userId = (args as int?) ?? 1; // Default to user 1 if not provided
+        return _slide(FinanceHistoryScreen(userId: userId));
 
       default:
-        return _slide(const Scaffold(
-          body: Center(child: Text('Halaman tidak ditemukan')),
-        ));
+        return _slide(
+          const Scaffold(body: Center(child: Text('Halaman tidak ditemukan'))),
+        );
     }
   }
 
@@ -107,8 +112,10 @@ class RouteGenerator {
       transitionsBuilder: (_, animation, __, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
-        final tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: Curves.easeInOut));
         return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 300),

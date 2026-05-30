@@ -1,86 +1,217 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:komars_express/core/database/database_helper.dart';
+import 'package:komars_express/core/constants/pref_keys.dart';
+import '../models/farm_package_model.dart';
+import 'farm_package_detail_screen.dart';
+import 'farm_management_screen.dart';
 
-class FarmHomeScreen extends StatelessWidget {
-  const FarmHomeScreen({super.key});
+class FarmHomeScreen extends StatefulWidget {
+  const FarmHomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<FarmHomeScreen> createState() => _FarmHomeScreenState();
+}
+
+class _FarmHomeScreenState extends State<FarmHomeScreen> {
+  late SharedPreferences _prefs;
+  late DatabaseHelper _dbHelper;
+  String _selectedFarmType = 'ayam';
+  List<FarmPackage> _packages = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    _prefs = await SharedPreferences.getInstance();
+    _dbHelper = DatabaseHelper.instance;
+
+    // Load saved farm type preference
+    _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'ayam';
+
+    // Load packages
+    await _loadPackages();
+  }
+
+  Future<void> _loadPackages() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final dao = _dbHelper.farmPackageDao;
+      final packages = await dao.getPackagesByFarmType(_selectedFarmType);
+      setState(() {
+        _packages = packages;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading packages: $e')));
+      }
+    }
+  }
+
+  Future<void> _saveFarmTypePreference(String farmType) async {
+    await _prefs.setString(PrefKeys.selectedFarmType, farmType);
+    setState(() => _selectedFarmType = farmType);
+    await _loadPackages();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Komars Farm'),
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.primaryGreen,
-        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FarmManagementScreen(),
+                ),
+              ).then((_) => _loadPackages());
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.agriculture_rounded,
-                  size: 64,
-                  color: AppColors.primaryGreen,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Portal Agribisnis Komars Farm',
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Halaman ini dialokasikan untuk modul kemitraan tani dan agribisnis yang dikerjakan oleh Vemas (PJ). Di sini ia akan menerapkan pemesanan paket benih/pupuk, visualisasi chart bookkeeping petani, dan pencatatan kas masuk-keluar pertanian.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontSize: 13,
-                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 32),
-              
-              // Direct navigation option to Vemas' bookkeeping screen to make testing routing fully integrated
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.farmFinanceHistory);
-                  },
-                  icon: const Icon(Icons.show_chart_rounded),
-                  label: const Text(
-                    'Lihat Pembukuan Mitra (PJ Vemas)',
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
-                      fontWeight: FontWeight.w700,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Farm Type Selector
+                  Text(
+                    'Select Farm Type',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 50,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: ['ayam', 'lele', 'hidroponik', 'sayuran']
+                          .map(
+                            (type) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(type),
+                                selected: _selectedFarmType == type,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    _saveFarmTypePreference(type);
+                                  }
+                                },
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Packages List
+                  Text(
+                    'Available Packages',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _packages.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 32),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.inbox_outlined,
+                                  size: 48,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No packages available',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _packages.length,
+                          itemBuilder: (context, index) {
+                            final package = _packages[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.all(12),
+                                leading: Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.agriculture,
+                                    color: Colors.green.shade700,
+                                    size: 32,
+                                  ),
+                                ),
+                                title: Text(package.title),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'ROI: ${package.roiMonths} months',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    Text(
+                                      'Capital: Rp ${package.initialCapitalMin.toStringAsFixed(0)} - Rp ${package.initialCapitalRec.toStringAsFixed(0)}',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          FarmPackageDetailScreen(
+                                            package: package,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
+

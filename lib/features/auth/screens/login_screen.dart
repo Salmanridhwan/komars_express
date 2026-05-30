@@ -22,7 +22,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    final user = await UserDao().login(_emailCtrl.text.trim(), _passCtrl.text);
+    final user = await UserDao().login(
+      _emailCtrl.text.trim(),
+      _passCtrl.text.trim(),
+    );
     setState(() => _loading = false);
     if (!mounted) return;
     if (user == null) {
@@ -64,8 +67,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: AppColors.primaryGreenSurface,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.eco_rounded,
-                          color: AppColors.primaryGreen, size: 28),
+                      child: const Icon(
+                        Icons.eco_rounded,
+                        color: AppColors.primaryGreen,
+                        size: 28,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -82,7 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 48),
                 Text(
                   'Selamat Datang\nKembali 👋',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(height: 1.2),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.displayMedium?.copyWith(height: 1.2),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -111,9 +119,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: AppStrings.password,
                     prefixIcon: const Icon(Icons.lock_outline_rounded),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined),
+                      icon: Icon(
+                        _obscure
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -134,7 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 22,
                             height: 22,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2.5, color: Colors.white))
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text(AppStrings.login),
                   ),
                 ),
@@ -142,8 +155,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppStrings.dontHaveAccount,
-                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      AppStrings.dontHaveAccount,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     GestureDetector(
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.register),

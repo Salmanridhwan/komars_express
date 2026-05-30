@@ -2,15 +2,26 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
+import 'package:komars_express/features/farm/package/db/farm_package_dao.dart';
+import 'package:komars_express/features/farm/finance/db/financial_record_dao.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
 
+  late FarmPackageDao _farmPackageDao;
+  late FinancialRecordDao _financialRecordDao;
+
+  FarmPackageDao get farmPackageDao => _farmPackageDao;
+  FinancialRecordDao get financialRecordDao => _financialRecordDao;
+
   static Database? _db;
 
   Future<Database> get database async {
     _db ??= await _initDb();
+    // Initialize DAOs with the database instance
+    _farmPackageDao = FarmPackageDao(_db!);
+    _financialRecordDao = FinancialRecordDao(_db!);
     return _db!;
   }
 
@@ -23,6 +34,11 @@ class DatabaseHelper {
           version: 1,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
+          onUpgrade: (db, oldVersion, newVersion) async {
+            print(
+              '🗄️  DATABASE: Upgrading from version $oldVersion to $newVersion',
+            );
+          },
         ),
       );
     }
@@ -33,6 +49,11 @@ class DatabaseHelper {
       version: 1,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        print(
+          '🗄️  DATABASE: Upgrading from version $oldVersion to $newVersion',
+        );
+      },
     );
   }
 
