@@ -24,7 +24,9 @@ class AppRoutes {
   static const String orderDetail = '/express/order/detail';
 
   static const String reservation = '/express/reservation';
+  static const String reservationConfirmation = '/express/reservation/confirm';
   static const String reservationHistory = '/express/reservation/history';
+  static const String reservationDetail = '/express/reservation/detail';
   static const String tableManagement = '/express/table/manage';
 
   static const String farmHome = '/farm';

@@ -21,7 +21,10 @@ import '../../features/express/order/screens/order_history_screen.dart';
 import '../../features/express/order/screens/order_detail_screen.dart';
 import '../../features/express/order/models/order_model.dart';
 import '../../features/express/reservation/screens/reservation_screen.dart';
+import '../../features/express/reservation/screens/reservation_confirmation_screen.dart';
 import '../../features/express/reservation/screens/reservation_history_screen.dart';
+import '../../features/express/reservation/screens/reservation_detail_screen.dart';
+import '../../features/express/reservation/models/reservation_model.dart';
 import '../../features/express/table/screens/table_management_screen.dart';
 import '../../features/farm/package/screens/farm_home_screen.dart';
 import '../../features/farm/finance/screens/finance_history_screen.dart';
@@ -77,8 +80,12 @@ class RouteGenerator {
 
       case AppRoutes.reservation:
         return _slide(const ReservationScreen());
+      case AppRoutes.reservationConfirmation:
+        return _slide(ReservationConfirmationScreen(reservationId: args as int));
       case AppRoutes.reservationHistory:
         return _slide(const ReservationHistoryScreen());
+      case AppRoutes.reservationDetail:
+        return _slide(ReservationDetailScreen(reservation: args as ReservationModel));
       case AppRoutes.tableManagement:
         return _slide(const TableManagementScreen());
 
