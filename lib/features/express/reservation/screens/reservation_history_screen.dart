@@ -6,6 +6,8 @@ import '../db/reservation_dao.dart';
 import '../models/reservation_model.dart';
 
 class ReservationHistoryScreen extends StatefulWidget {
+  /// Jika true, screen ditampilkan sebagai tab (tanpa AppBar & FAB sendiri).
+  /// Digunakan oleh ExpressAdminDashboard (Salman).
   final bool embedded;
   const ReservationHistoryScreen({super.key, this.embedded = false});
 
@@ -81,23 +83,81 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
               backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
               foregroundColor: Colors.white,
               actions: [
-                IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: _load,
+                  tooltip: 'Refresh',
+                ),
               ],
+            ),
+      // FAB home hanya tampil saat standalone (bukan embedded di dashboard)
+      floatingActionButton: widget.embedded
+          ? null
+          : FloatingActionButton(
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                  context, AppRoutes.home, (route) => false),
+              backgroundColor: AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              tooltip: 'Kembali ke Beranda',
+              child: const Icon(Icons.home_rounded, size: 28),
             ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _reservations.isEmpty
               ? Center(
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.table_restaurant_rounded, size: 72,
-                        color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text('Belum ada reservasi',
-                        style: TextStyle(fontFamily: 'Outfit', fontSize: 16, color: Colors.grey[600])),
-                    const SizedBox(height: 8),
-                    Text('Buat reservasi pertama Anda sekarang!',
-                        style: TextStyle(fontFamily: 'Outfit', fontSize: 13, color: Colors.grey[400])),
-                  ]),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.table_restaurant_rounded,
+                          size: 80, color: Colors.grey[350]),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Belum ada reservasi',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Buat reservasi pertama Anda sekarang!',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 13,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          await Navigator.pushNamed(
+                              context, AppRoutes.reservation);
+                          _load();
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text(
+                          'Buat Reservasi',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondaryOrange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 13),
+                          elevation: 0,
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),

@@ -5,6 +5,8 @@ import '../models/table_model.dart';
 import '../widgets/table_grid_selector.dart';
 
 class TableManagementScreen extends StatefulWidget {
+  /// Jika true, screen ditampilkan sebagai tab (tanpa AppBar & FAB sendiri).
+  /// Digunakan oleh ExpressAdminDashboard (Salman).
   final bool embedded;
   const TableManagementScreen({super.key, this.embedded = false});
 
@@ -114,14 +116,16 @@ class _TableManagementScreenState extends State<TableManagementScreen>
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEdit(),
-        backgroundColor: AppColors.secondaryOrange,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Tambah Meja',
-            style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
-      ),
+      floatingActionButton: widget.embedded
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => _showAddEdit(),
+              backgroundColor: AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Tambah Meja',
+                  style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
+            ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(
