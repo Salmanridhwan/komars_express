@@ -1,13 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../db/menu_dao.dart';
 import '../models/menu_item_model.dart';
 
 class MenuManagementScreen extends StatefulWidget {
-  const MenuManagementScreen({super.key});
+  final bool embedded;
+  const MenuManagementScreen({super.key, this.embedded = false});
 
   @override
   State<MenuManagementScreen> createState() => _MenuManagementScreenState();
@@ -39,20 +43,43 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Menu?'),
-        content: Text('Apakah Anda yakin ingin menghapus "${item.name}" dari daftar menu?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Hapus Menu?',
+              style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          'Menu "${item.name}" akan dihapus secara permanen dari daftar.',
+          style: const TextStyle(fontFamily: 'Outfit', fontSize: 14, color: Colors.grey),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deleteRed,
-              foregroundColor: Colors.white,
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
             ),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Hapus'),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -60,9 +87,14 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
 
     if (confirm == true && item.id != null) {
       await _menuDao.delete(item.id!);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${item.name}" berhasil dihapus')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"${item.name}" berhasil dihapus'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       _loadAllMenus();
     }
   }
@@ -86,15 +118,17 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kelola Menu (Kasir/Admin)'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: _loadAllMenus,
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Kelola Menu'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: _loadAllMenus,
+                ),
+              ],
+            ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _menuItems.isEmpty
@@ -143,121 +177,159 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.darkCard : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
                         ),
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            color: Colors.grey[300],
-                            child: item.imagePath != null && item.imagePath!.isNotEmpty
-                                ? Image.file(
-                                    File(item.imagePath!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : Icon(
-                                    item.category.toLowerCase() == 'drink'
-                                        ? Icons.local_drink_rounded
-                                        : Icons.restaurant_rounded,
-                                    color: Colors.grey[600],
-                                  ),
-                          ),
-                        ),
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.name,
-                                style: const TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: categoryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                item.category.toUpperCase(),
-                                style: TextStyle(
-                                  color: categoryColor,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        subtitle: Column(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              CurrencyFormatter.format(item.price),
-                              style: TextStyle(
-                                fontFamily: 'Outfit',
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+                            // Image / Icon
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 56,
+                                height: 56,
+                                color: isDark ? AppColors.darkSurface : Colors.grey[100],
+                                child: item.imagePath != null && item.imagePath!.isNotEmpty
+                                    ? (kIsWeb
+                                        ? Image.network(
+                                            item.imagePath!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image_rounded, color: Colors.grey[400]),
+                                          )
+                                        : Image.file(
+                                            File(item.imagePath!),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image_rounded, color: Colors.grey[400]),
+                                          ))
+                                    : Icon(
+                                        item.category.toLowerCase() == 'drink' || item.category.toLowerCase() == 'beverage'
+                                            ? Icons.local_drink_rounded
+                                            : Icons.restaurant_rounded,
+                                        color: Colors.grey[400],
+                                      ),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  item.isAvailable ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                  color: item.isAvailable ? Colors.green : Colors.red,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  item.isAvailable ? 'Tersedia' : 'Habis',
-                                  style: TextStyle(
-                                    fontFamily: 'Outfit',
-                                    fontSize: 11,
-                                    color: item.isAvailable ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                                if (item.farmSource != null && item.farmSource!.isNotEmpty) ...[
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.eco_rounded, size: 12, color: AppColors.farmBadgeText),
-                                  const SizedBox(width: 2),
-                                  Expanded(
-                                    child: Text(
-                                      item.farmSource!,
-                                      style: const TextStyle(
-                                        fontFamily: 'Outfit',
-                                        fontSize: 11,
-                                        color: AppColors.farmBadgeText,
+                            const SizedBox(width: 12),
+                            // Details
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          item.name,
+                                          style: const TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: categoryColor.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          item.category.toUpperCase(),
+                                          style: TextStyle(
+                                            color: categoryColor,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    CurrencyFormatter.format(item.price),
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
                                     ),
                                   ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        item.isAvailable ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                                        color: item.isAvailable ? Colors.green : Colors.red,
+                                        size: 12,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        item.isAvailable ? 'Tersedia' : 'Habis',
+                                        style: TextStyle(
+                                          fontFamily: 'Outfit',
+                                          fontSize: 11,
+                                          color: item.isAvailable ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                      if (item.farmSource != null && item.farmSource!.isNotEmpty) ...[
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            '• ${item.farmSource!}',
+                                            style: const TextStyle(
+                                              fontFamily: 'Outfit',
+                                              fontSize: 11,
+                                              color: Colors.grey,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ],
+                              ),
+                            ),
+                            // Action Buttons
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                InkWell(
+                                  onTap: () => _openFormModal(item: item),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(Icons.edit_outlined, size: 16, color: Colors.blue),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                InkWell(
+                                  onTap: () => _deleteMenu(item),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                  ),
+                                ),
                               ],
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                              onPressed: () => _openFormModal(item: item),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-                              onPressed: () => _deleteMenu(item),
                             ),
                           ],
                         ),
@@ -265,13 +337,9 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     );
                   },
                 ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _openFormModal(),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Tambah Menu',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
-        ),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }
@@ -293,22 +361,49 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
   final _descController = TextEditingController();
   final _priceController = TextEditingController();
   final _farmSourceController = TextEditingController();
-
-  String _category = 'Food';
+  final _categoryController = TextEditingController();
+  List<String> _existingCategories = [];
+  bool _isAddingNewCategory = false;
   bool _isAvailable = true;
   String? _imagePath;
 
   @override
   void initState() {
     super.initState();
+    _existingCategories = ['Food', 'Drink', 'Beverage'];
+    _isAddingNewCategory = false;
+    
     if (widget.item != null) {
       _nameController.text = widget.item!.name;
       _descController.text = widget.item!.description;
       _priceController.text = widget.item!.price.toStringAsFixed(0);
       _farmSourceController.text = widget.item!.farmSource ?? '';
-      _category = widget.item!.category;
+      _categoryController.text = widget.item!.category;
       _isAvailable = widget.item!.isAvailable;
       _imagePath = widget.item!.imagePath;
+    }
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final categories = await MenuDao().getCategories();
+    if (mounted) {
+      setState(() {
+        _existingCategories = ['Food', 'Drink', 'Beverage'];
+        for (final c in categories) {
+          final exists = _existingCategories.any((existing) => existing.toLowerCase() == c.toLowerCase());
+          if (!exists) {
+            _existingCategories.add(c);
+          }
+        }
+        
+        if (widget.item != null) {
+           final exists = _existingCategories.any((existing) => existing.toLowerCase() == widget.item!.category.toLowerCase());
+           if (!exists) {
+              _isAddingNewCategory = true;
+           }
+        }
+      });
     }
   }
 
@@ -318,15 +413,35 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
     _descController.dispose();
     _priceController.dispose();
     _farmSourceController.dispose();
+    _categoryController.dispose();
     super.dispose();
+  }
+
+  Future<String?> _copyImageToCategory(String sourcePath, String category) async {
+    if (kIsWeb) return sourcePath; // Web tidak mendukung akses sistem file lokal
+    
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final categoryFolder = category.toLowerCase().trim();
+      final destDir = Directory(p.join(appDir.path, 'menu', categoryFolder));
+      if (!await destDir.exists()) {
+        await destDir.create(recursive: true);
+      }
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}${p.extension(sourcePath)}';
+      final destPath = p.join(destDir.path, fileName);
+      await File(sourcePath).copy(destPath);
+      return destPath;
+    } catch (e) {
+      return sourcePath; // fallback: gunakan path asli
+    }
   }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (pickedFile != null) {
       setState(() {
-        _imagePath = pickedFile.path;
+        _imagePath = pickedFile.path; // simpan sementara; akan di-copy saat submit
       });
     }
   }
@@ -334,15 +449,26 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final category = _categoryController.text.trim().isEmpty ? 'Food' : _categoryController.text.trim();
+
+    // Jika gambar dipilih dan belum disalin ke folder permanen, salin sekarang
+    String? finalImagePath = _imagePath;
+    final isNewImage = _imagePath != null &&
+        !_imagePath!.contains('menu${Platform.pathSeparator}${category.toLowerCase()}') &&
+        !_imagePath!.contains('assets/');
+    if (_imagePath != null && isNewImage) {
+      finalImagePath = await _copyImageToCategory(_imagePath!, category);
+    }
+
     final updated = MenuItemModel(
       id: widget.item?.id,
       name: _nameController.text.trim(),
       description: _descController.text.trim(),
       price: double.tryParse(_priceController.text) ?? 0.0,
-      category: _category,
+      category: category,
       isAvailable: _isAvailable,
       farmSource: _farmSourceController.text.trim().isEmpty ? null : _farmSourceController.text.trim(),
-      imagePath: _imagePath,
+      imagePath: finalImagePath,
     );
 
     if (widget.item != null) {
@@ -404,10 +530,17 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                     child: _imagePath != null && _imagePath!.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.file(
-                              File(_imagePath!),
-                              fit: BoxFit.cover,
-                            ),
+                            child: kIsWeb
+                                ? Image.network(
+                                    _imagePath!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                  )
+                                : Image.file(
+                                    File(_imagePath!),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                  ),
                           )
                         : const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -448,21 +581,63 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
               ),
               const SizedBox(height: 16),
 
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                value: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Kategori Hidangan',
-                  prefixIcon: Icon(Icons.category_rounded),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Food', child: Text('Food')),
-                  DropdownMenuItem(value: 'Drink', child: Text('Drink')),
-                  DropdownMenuItem(value: 'Beverage', child: Text('Beverage')),
+              // Category Selection
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Kategori Hidangan *',
+                    style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final cat in _existingCategories)
+                        ChoiceChip(
+                          label: Text(cat, style: TextStyle(color: _categoryController.text == cat && !_isAddingNewCategory ? Colors.white : null)),
+                          selectedColor: AppColors.primaryGreen,
+                          selected: _categoryController.text == cat && !_isAddingNewCategory,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() {
+                                _categoryController.text = cat;
+                                _isAddingNewCategory = false;
+                              });
+                            }
+                          },
+                        ),
+                      ChoiceChip(
+                        label: const Text('+ Baru', style: TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.bold)),
+                        selected: _isAddingNewCategory,
+                        selectedColor: AppColors.primaryGreenLight,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() {
+                              _isAddingNewCategory = true;
+                              if (_existingCategories.contains(_categoryController.text)) {
+                                _categoryController.text = ''; // Clear if they switch from an existing category
+                              }
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  if (_isAddingNewCategory) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _categoryController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nama Kategori Baru *',
+                        hintText: 'Ketik kategori baru (contoh: Snack)',
+                        prefixIcon: Icon(Icons.add_circle_outline_rounded),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Kategori tidak boleh kosong' : null,
+                    ),
+                  ],
                 ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _category = val);
-                },
               ),
               const SizedBox(height: 16),
 

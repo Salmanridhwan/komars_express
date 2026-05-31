@@ -5,7 +5,8 @@ import '../models/table_model.dart';
 import '../widgets/table_grid_selector.dart';
 
 class TableManagementScreen extends StatefulWidget {
-  const TableManagementScreen({super.key});
+  final bool embedded;
+  const TableManagementScreen({super.key, this.embedded = false});
 
   @override
   State<TableManagementScreen> createState() => _TableManagementScreenState();
@@ -91,26 +92,28 @@ class _TableManagementScreenState extends State<TableManagementScreen>
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      appBar: AppBar(
-        title: const Text('Manajemen Meja'),
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
-        ],
-        bottom: TabBar(
-          controller: _tabCtrl,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
-          tabs: const [
-            Tab(text: 'Daftar Meja', icon: Icon(Icons.list_alt_rounded, size: 18)),
-            Tab(text: 'Denah Lantai', icon: Icon(Icons.grid_view_rounded, size: 18)),
-          ],
-        ),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Manajemen Meja'),
+              backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              actions: [
+                IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
+              ],
+              bottom: TabBar(
+                controller: _tabCtrl,
+                indicatorColor: Colors.white,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
+                tabs: const [
+                  Tab(text: 'Daftar Meja', icon: Icon(Icons.list_alt_rounded, size: 18)),
+                  Tab(text: 'Denah Lantai', icon: Icon(Icons.grid_view_rounded, size: 18)),
+                ],
+              ),
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEdit(),
         backgroundColor: AppColors.secondaryOrange,

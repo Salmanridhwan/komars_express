@@ -138,6 +138,19 @@ ThemeData buildLightTheme() {
       thickness: 1,
       space: 1,
     ),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.primaryGreen,
+      actionTextColor: AppColors.secondaryOrange,
+      contentTextStyle: TextStyle(
+        fontFamily: 'Outfit',
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
+      ),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: AppColors.lightSurface,
       selectedItemColor: primary,
@@ -145,15 +158,7 @@ ThemeData buildLightTheme() {
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkSurface,
-      contentTextStyle: const TextStyle(
-        fontFamily: 'Outfit',
-        color: Colors.white,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      behavior: SnackBarBehavior.floating,
-    ),
+
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.lightCard,
       selectedColor: primary,

@@ -138,14 +138,18 @@ ThemeData buildDarkTheme() {
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkCard,
-      contentTextStyle: const TextStyle(
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.primaryGreen,
+      actionTextColor: AppColors.secondaryOrange,
+      contentTextStyle: TextStyle(
         fontFamily: 'Outfit',
-        color: AppColors.darkTextPrimary,
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: primary,

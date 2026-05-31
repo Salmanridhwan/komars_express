@@ -15,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   UserModel? _user;
-  int _bottomIdx = 0;
 
   @override
   void initState() {

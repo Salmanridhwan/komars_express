@@ -2,14 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/pref_keys.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../auth/db/user_dao.dart';
 import '../../auth/models/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final bool embedded;
+  const ProfileScreen({super.key, this.embedded = false});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -53,15 +53,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deleteRed,
-              foregroundColor: Colors.white,
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
             ),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Keluar'),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(color: AppColors.deleteRed, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -70,6 +72,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirm == true) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(PrefKeys.userSessionToken);
+      await prefs.remove(PrefKeys.userRole);
+      await prefs.remove(PrefKeys.selectedApp);
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -83,20 +87,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isAdmin = _user?.isAdmin ?? false;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil Pengguna'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () async {
-              await Navigator.pushNamed(context, AppRoutes.editProfile);
-              _loadUserProfile();
-            },
-          ),
-        ],
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Profil Pengguna'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () async {
+                    await Navigator.pushNamed(context, AppRoutes.editProfile);
+                    _loadUserProfile();
+                  },
+                ),
+              ],
+            ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -151,7 +158,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : AppColors.lightTextSecondary,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 8),
+                  // Role Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isAdmin
+                          ? AppColors.secondaryOrangeSurface
+                          : AppColors.primaryGreenSurface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isAdmin
+                            ? AppColors.secondaryOrange.withValues(alpha: 0.4)
+                            : AppColors.primaryGreen.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isAdmin
+                              ? Icons.admin_panel_settings_rounded
+                              : Icons.person_rounded,
+                          size: 14,
+                          color: isAdmin
+                              ? AppColors.secondaryOrange
+                              : AppColors.primaryGreen,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isAdmin ? 'Administrator' : 'Pelanggan',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isAdmin
+                                ? AppColors.secondaryOrangeDark
+                                : AppColors.primaryGreenDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   
                   // Detail Information
                   Container(

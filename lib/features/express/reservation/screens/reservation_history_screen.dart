@@ -6,7 +6,8 @@ import '../db/reservation_dao.dart';
 import '../models/reservation_model.dart';
 
 class ReservationHistoryScreen extends StatefulWidget {
-  const ReservationHistoryScreen({super.key});
+  final bool embedded;
+  const ReservationHistoryScreen({super.key, this.embedded = false});
 
   @override
   State<ReservationHistoryScreen> createState() => _ReservationHistoryScreenState();
@@ -73,22 +74,16 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      appBar: AppBar(
-        title: const Text('Riwayat Reservasi'),
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context, AppRoutes.home, (route) => false),
-        backgroundColor: AppColors.secondaryOrange,
-        foregroundColor: Colors.white,
-        tooltip: 'Kembali ke Beranda',
-        child: const Icon(Icons.home_rounded, size: 28),
-      ),
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Riwayat Reservasi'),
+              backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              actions: [
+                IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
+              ],
+            ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _reservations.isEmpty

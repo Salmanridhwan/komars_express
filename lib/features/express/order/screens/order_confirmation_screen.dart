@@ -3,7 +3,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/notification_helper.dart';
 import '../db/order_dao.dart';
-import '../models/order_model.dart';
 
 class OrderConfirmationScreen extends StatefulWidget {
   final String orderCode;
@@ -16,7 +15,6 @@ class OrderConfirmationScreen extends StatefulWidget {
 
 class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
   final _orderDao = OrderDao();
-  OrderModel? _order;
   bool _isLoading = true;
 
   @override
@@ -36,7 +34,6 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
     }
     if (mounted) {
       setState(() {
-        _order = order;
         _isLoading = false;
       });
     }

@@ -7,6 +7,21 @@ class SeedData {
   static Future<void> seed() async {
     final db = await DatabaseHelper.instance.database;
 
+    // ── Seed admin account ────────────────────────────────────────────────────
+    final adminCheck = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: ['admin@gmail.com'],
+    );
+    if (adminCheck.isEmpty) {
+      await db.insert('users', {
+        'name': 'Administrator',
+        'email': 'admin@gmail.com',
+        'password': 'admin123',
+        'role': 'admin',
+      });
+    }
+
     // Check if menu_items already seeded
     final menuCount = Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM menu_items'));
@@ -26,6 +41,7 @@ class SeedData {
       await _seedFarmPackages(db);
     }
   }
+
 
   static Future<void> _seedMenuItems(db) async {
     final menus = [

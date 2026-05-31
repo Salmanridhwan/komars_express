@@ -37,14 +37,31 @@ class _SplashScreenState extends State<SplashScreen>
     final prefs = await SharedPreferences.getInstance();
     final onboardingDone = prefs.getBool(PrefKeys.isOnboardingDone) ?? false;
     final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
+    final role = prefs.getString(PrefKeys.userRole) ?? 'customer';
+    final selectedApp = prefs.getString(PrefKeys.selectedApp) ?? '';
+
     if (!onboardingDone) {
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
-    } else if (token.isEmpty) {
+    } else if (token.isEmpty || selectedApp.isEmpty) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      // Restore session ke dashboard yang sesuai
+      if (role == 'admin') {
+        if (selectedApp == 'farm') {
+          Navigator.pushReplacementNamed(context, AppRoutes.farmAdminDashboard);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.expressAdminDashboard);
+        }
+      } else {
+        if (selectedApp == 'farm') {
+          Navigator.pushReplacementNamed(context, AppRoutes.farmCustomerHome);
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
+        }
+      }
     }
   }
+
 
   @override
   void dispose() {

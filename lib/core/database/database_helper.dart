@@ -31,14 +31,10 @@ class DatabaseHelper {
       return await factory.openDatabase(
         'komars.db',
         options: OpenDatabaseOptions(
-          version: 1,
+          version: 2,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
-          onUpgrade: (db, oldVersion, newVersion) async {
-            print(
-              '🗄️  DATABASE: Upgrading from version $oldVersion to $newVersion',
-            );
-          },
+          onUpgrade: _onUpgrade,
         ),
       );
     }
@@ -46,19 +42,24 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'komars.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
-      onUpgrade: (db, oldVersion, newVersion) async {
-        print(
-          '🗄️  DATABASE: Upgrading from version $oldVersion to $newVersion',
-        );
-      },
+      onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onConfigure(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON;');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // v1 -> v2: add role column to users
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'",
+      );
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -69,6 +70,7 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'customer',
         phone_number TEXT,
         profile_image TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP

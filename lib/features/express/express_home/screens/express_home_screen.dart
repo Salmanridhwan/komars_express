@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/routes/app_routes.dart';
 
 class ExpressHomeScreen extends StatelessWidget {

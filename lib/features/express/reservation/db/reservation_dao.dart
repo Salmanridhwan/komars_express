@@ -22,6 +22,19 @@ class ReservationDao {
     return List.generate(maps.length, (i) => ReservationModel.fromMap(maps[i]));
   }
 
+  /// Get ALL reservations (admin view), joined with table info.
+  Future<List<ReservationModel>> getAll() async {
+    final db = await _db.database;
+    final maps = await db.rawQuery('''
+      SELECT r.*, t.table_number, t.location
+      FROM reservations r
+      LEFT JOIN tables t ON r.table_id = t.id
+      ORDER BY r.reservation_date DESC, r.start_time DESC
+    ''');
+    return List.generate(maps.length, (i) => ReservationModel.fromMap(maps[i]));
+  }
+
+
   /// Get reservations booked for a specific table on a specific date (for conflict check).
   Future<List<ReservationModel>> getByTableAndDate(int tableId, String date) async {
     final db = await _db.database;

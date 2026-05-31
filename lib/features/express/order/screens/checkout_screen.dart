@@ -67,9 +67,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final total = _cart.totalAmount;
     final notes = _notesController.text.trim();
     
+    final prefs = await SharedPreferences.getInstance();
+    final userIdStr = prefs.getString(PrefKeys.userSessionToken);
+    final userId = userIdStr != null ? int.tryParse(userIdStr) ?? 1 : 1; // Fallback to 1 if not found
+
     // Status is 'Menunggu Pembayaran' if QRIS, otherwise 'Lunas' or 'Menunggu Pembayaran' depending on dine-in rules.
     // Let's mark QRIS as 'Menunggu Pembayaran' and Pay on Site as 'Menunggu Pembayaran' initially.
     final order = OrderModel(
+      userId: userId,
       orderCode: orderCode,
       paymentMethod: _paymentMethod,
       totalAmount: total,

@@ -98,39 +98,40 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image and Badges
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-                    child: Hero(
-                      tag: 'menu-image-${widget.item.id}',
-                      child: Container(
-                        height: 120,
-                        width: double.infinity,
-                        color: isDark ? Colors.grey[800] : Colors.grey[200],
-                        child: widget.item.imagePath != null &&
-                                widget.item.imagePath!.isNotEmpty
-                            ? Image.file(
-                                File(widget.item.imagePath!),
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(
-                                  child: Icon(Icons.broken_image_outlined,
-                                      size: 40, color: Colors.grey),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                      child: Hero(
+                        tag: 'menu-image-${widget.item.id}',
+                        child: Container(
+                          width: double.infinity,
+                          color: isDark ? Colors.grey[800] : Colors.grey[200],
+                          child: widget.item.imagePath != null &&
+                                  widget.item.imagePath!.isNotEmpty
+                              ? Image.file(
+                                  File(widget.item.imagePath!),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                    child: Icon(Icons.broken_image_outlined,
+                                        size: 40, color: Colors.grey),
+                                  ),
+                                )
+                              : Center(
+                                  child: Icon(
+                                    widget.item.category.toLowerCase() == 'drink'
+                                        ? Icons.local_drink_rounded
+                                        : Icons.restaurant_rounded,
+                                    size: 40,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              )
-                            : Center(
-                                child: Icon(
-                                  widget.item.category.toLowerCase() == 'drink'
-                                      ? Icons.local_drink_rounded
-                                      : Icons.restaurant_rounded,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                        ),
                       ),
                     ),
-                  ),
                   // Category Badge
                   Positioned(
                     top: 10,
@@ -175,8 +176,9 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                     ),
                 ],
               ),
+            ),
               
-              // Info content
+            // Info content
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(

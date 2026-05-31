@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Komars App (Web Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "args": [
+        "--web-port",
+        "8080"
+      ]
+    },
+    {
+      "name": "Komars App (Web Server)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "web-server",
+      "args": [
+        "--web-port",
+        "8080"
+      ]
+    },
+    {
+      "name": "Komars App (Default)",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--web-port",
+        "8080"
+      ]
+    }
+  ]
+}

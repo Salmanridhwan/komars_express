@@ -4,9 +4,11 @@ class PrefKeys {
   // ─── Shared ───────────────────────────────────────────────────────────────
   static const String isOnboardingDone = 'is_onboarding_done';
   static const String isDarkMode = 'is_dark_mode';
+  static const String selectedApp = 'selected_app'; // 'express' | 'farm'
 
   // ─── Salman ───────────────────────────────────────────────────────────────
   static const String userSessionToken = 'user_session_token';
+  static const String userRole = 'user_role'; // 'admin' | 'customer'
   static const String lastPaymentMethod = 'last_payment_method';
 
   // ─── Ega ──────────────────────────────────────────────────────────────────
@@ -17,3 +19,4 @@ class PrefKeys {
   static const String selectedFarmType = 'selected_farm_type';
   static const String financeFilterPeriod = 'finance_filter_period';
 }
+

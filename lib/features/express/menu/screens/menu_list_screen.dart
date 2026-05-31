@@ -8,7 +8,8 @@ import '../models/menu_item_model.dart';
 import '../widgets/menu_card.dart';
 
 class MenuListScreen extends StatefulWidget {
-  const MenuListScreen({super.key});
+  final bool embedded;
+  const MenuListScreen({super.key, this.embedded = false});
 
   @override
   State<MenuListScreen> createState() => _MenuListScreenState();
@@ -23,7 +24,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
   String _selectedCategory = 'All';
   bool _isLoading = true;
 
-  final List<String> _categories = ['All', 'Food', 'Drink', 'Beverage'];
+  List<String> _categories = ['All'];
 
   @override
   void initState() {
@@ -41,10 +42,13 @@ class _MenuListScreenState extends State<MenuListScreen> {
   Future<void> _loadMenus() async {
     setState(() => _isLoading = true);
     final items = await _menuDao.getAvailable();
+    final dbCategories = await _menuDao.getCategories();
     if (mounted) {
       setState(() {
         _allMenuItems = items;
         _filteredMenuItems = items;
+        _categories = ['All'];
+        _categories.addAll(dbCategories);
         _isLoading = false;
       });
     }
@@ -81,6 +85,7 @@ class _MenuListScreenState extends State<MenuListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
         title: const Text('Katalog Hidangan'),
         actions: [
           IconButton(

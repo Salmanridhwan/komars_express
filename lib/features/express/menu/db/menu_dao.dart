@@ -32,6 +32,26 @@ class MenuDao {
     return MenuItemModel.fromMap(maps.first);
   }
 
+  Future<List<String>> getCategories() async {
+    final db = await _db.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'menu_items',
+      distinct: true,
+      columns: ['category'],
+    );
+    final Set<String> normalizedCategories = {};
+    for (final m in maps) {
+      if (m['category'] != null) {
+        final cat = m['category'].toString().trim();
+        if (cat.isNotEmpty) {
+          final normalized = cat[0].toUpperCase() + cat.substring(1);
+          normalizedCategories.add(normalized);
+        }
+      }
+    }
+    return normalizedCategories.toList();
+  }
+
   Future<int> update(MenuItemModel item) async {
     final db = await _db.database;
     return await db.update(

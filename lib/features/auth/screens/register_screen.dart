@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../core/routes/app_routes.dart';
 import '../db/user_dao.dart';
 import '../models/user_model.dart';
 
@@ -19,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscure = true;
+  bool _obscureConfirm = true;
   bool _loading = false;
 
   Future<void> _register() async {
@@ -39,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text.trim(),
+        role: 'customer',
         phoneNumber: _phoneCtrl.text.trim(),
       ),
     );
@@ -47,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text(AppStrings.registerSuccess)));
-    Navigator.pushReplacementNamed(context, AppRoutes.login);
+    Navigator.pop(context); // Kembali ke login screen sub-app yang sesuai
   }
 
   @override
@@ -71,9 +72,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Buat Akun Baru 🌱',
-                style: Theme.of(context).textTheme.displayMedium,
+              Row(
+                children: [
+                  Text(
+                    'Buat Akun Baru',
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.eco_rounded,
+                    color: AppColors.primaryGreen,
+                    size: 32,
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Text(
@@ -138,10 +149,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 14),
               TextFormField(
                 controller: _confirmCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: _obscureConfirm,
+                decoration: InputDecoration(
                   labelText: AppStrings.confirmPassword,
-                  prefixIcon: Icon(Icons.lock_outline_rounded),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirm
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  ),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return AppStrings.required;

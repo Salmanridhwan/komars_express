@@ -7,7 +7,8 @@ import '../db/order_dao.dart';
 import '../models/order_model.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({super.key});
+  final bool embedded;
+  const OrderHistoryScreen({super.key, this.embedded = false});
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
@@ -44,15 +45,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Kembali', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deleteRed,
-              foregroundColor: Colors.white,
+            child: const Text(
+              'Kembali',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
             ),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Batalkan Pesanan'),
+            child: const Text(
+              'Batalkan Pesanan',
+              style: TextStyle(color: AppColors.deleteRed, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -73,6 +76,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
         title: const Text('Riwayat Transaksi'),
         actions: [
           IconButton(
@@ -85,20 +89,61 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _orders.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.receipt_long_rounded, size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Belum ada transaksi',
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 16,
-                          color: Colors.grey[600],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long_rounded,
+                            size: 80,
+                            color: AppColors.primaryGreen,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Belum Ada Pesanan',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Kelihatannya Anda belum memesan apapun. Yuk, jelajahi menu lezat kami dan mulai pesanan pertama Anda!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (widget.embedded) {
+                                // If embedded in navbar, it's a bit tricky to change the navbar index from here without a global state,
+                                // but we can push the menu list route instead.
+                                Navigator.pushNamed(context, AppRoutes.menuList);
+                              } else {
+                                Navigator.pushNamed(context, AppRoutes.menuList);
+                              }
+                            },
+                            child: const Text('Mulai Pesan Sekarang'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -144,39 +189,54 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Order code and status badge
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    order.orderCode,
-                                    style: const TextStyle(
-                                      fontFamily: 'Outfit',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
+                                    child: const Icon(Icons.receipt_long_rounded, color: AppColors.primaryGreen),
                                   ),
-                                  StatusBadge(
-                                    status: statusText,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              order.orderCode,
+                                              style: const TextStyle(
+                                                fontFamily: 'Outfit',
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                            StatusBadge(status: statusText),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '${(order.createdAt != null && order.createdAt!.length >= 16) ? order.createdAt!.substring(0, 16).replaceAll('T', ' ') : (order.createdAt ?? '-')} • ${order.paymentMethod}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-
-                              // Date and time info
-                              Text(
-                                order.createdAt != null
-                                    ? order.createdAt!.substring(0, 16).replaceAll('T', ' ')
-                                    : '-',
-                                style: const TextStyle(
-                                  fontFamily: 'Outfit',
-                                  fontSize: 11,
-                                  color: Colors.grey,
-                                ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Divider(height: 1, color: AppColors.lightDivider),
                               ),
-                              const Divider(height: 24),
-
-                              // Amount and options
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -184,12 +244,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       const Text(
-                                        'TOTAL PEMBAYARAN',
+                                        'Total Belanja',
                                         style: TextStyle(
                                           fontFamily: 'Outfit',
-                                          fontSize: 9,
+                                          fontSize: 10,
                                           color: Colors.grey,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
@@ -197,39 +257,30 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                         CurrencyFormatter.format(order.totalAmount),
                                         style: TextStyle(
                                           fontFamily: 'Outfit',
-                                          fontSize: 15,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w800,
-                                          color: isDark
-                                              ? AppColors.primaryGreenLight
-                                              : AppColors.primaryGreen,
+                                          color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Row(
-                                    children: [
-                                      // Cancel Option (Assessment requirement)
-                                      if (order.status == 'Menunggu Pembayaran')
-                                        TextButton.icon(
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: AppColors.deleteRed,
-                                          ),
-                                          onPressed: () => _cancelOrder(order),
-                                          icon: const Icon(Icons.cancel_outlined, size: 16),
-                                          label: const Text(
-                                            'Batalkan',
-                                            style: TextStyle(
-                                              fontFamily: 'Outfit',
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
+                                  if (order.status == 'Menunggu Pembayaran')
+                                    SizedBox(
+                                      height: 32,
+                                      child: OutlinedButton(
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: AppColors.deleteRed,
+                                          side: const BorderSide(color: AppColors.deleteRed),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                                          minimumSize: Size.zero,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                         ),
-                                      const SizedBox(width: 8),
-                                      const Icon(Icons.arrow_forward_ios_rounded,
-                                          size: 14, color: Colors.grey),
-                                    ],
-                                  ),
+                                        onPressed: () => _cancelOrder(order),
+                                        child: const Text('Batalkan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                      ),
+                                    )
+                                  else
+                                    const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                                 ],
                               ),
                             ],

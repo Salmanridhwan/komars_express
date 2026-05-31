@@ -1,5 +1,6 @@
 class OrderModel {
   final int? id;
+  final int userId;
   final String orderCode;
   final String paymentMethod; // 'QRIS', 'Pay on Site'
   final double totalAmount;
@@ -9,6 +10,7 @@ class OrderModel {
 
   const OrderModel({
     this.id,
+    required this.userId,
     required this.orderCode,
     required this.paymentMethod,
     required this.totalAmount,
@@ -19,6 +21,7 @@ class OrderModel {
 
   Map<String, dynamic> toMap() => {
         if (id != null) 'id': id,
+        'user_id': userId,
         'order_code': orderCode,
         'payment_method': paymentMethod,
         'total_amount': totalAmount,
@@ -28,6 +31,7 @@ class OrderModel {
 
   factory OrderModel.fromMap(Map<String, dynamic> map) => OrderModel(
         id: map['id'] as int?,
+        userId: map['user_id'] as int,
         orderCode: map['order_code'] as String,
         paymentMethod: map['payment_method'] as String,
         totalAmount: (map['total_amount'] as num).toDouble(),
@@ -38,6 +42,7 @@ class OrderModel {
 
   OrderModel copyWith({
     int? id,
+    int? userId,
     String? orderCode,
     String? paymentMethod,
     double? totalAmount,
@@ -47,6 +52,7 @@ class OrderModel {
   }) =>
       OrderModel(
         id: id ?? this.id,
+        userId: userId ?? this.userId,
         orderCode: orderCode ?? this.orderCode,
         paymentMethod: paymentMethod ?? this.paymentMethod,
         totalAmount: totalAmount ?? this.totalAmount,
