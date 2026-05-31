@@ -17,6 +17,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? _user;
+  String? _selectedApp;
   bool _isLoading = true;
 
   @override
@@ -29,6 +30,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isLoading = true);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
+    _selectedApp = prefs.getString(PrefKeys.selectedApp);
+
     if (token.isNotEmpty) {
       final user = await UserDao().getById(int.tryParse(token) ?? 0);
       if (mounted) {
@@ -62,7 +65,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: () => Navigator.pop(context, true),
             child: const Text(
               'Keluar',
-              style: TextStyle(color: AppColors.deleteRed, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: AppColors.deleteRed,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -120,11 +126,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundColor: isDark
                               ? AppColors.darkCard
                               : AppColors.primaryGreenSurface,
-                          backgroundImage: _user?.profileImage != null &&
+                          backgroundImage:
+                              _user?.profileImage != null &&
                                   _user!.profileImage!.isNotEmpty
                               ? FileImage(File(_user!.profileImage!))
                               : null,
-                          child: _user?.profileImage == null ||
+                          child:
+                              _user?.profileImage == null ||
                                   _user!.profileImage!.isEmpty
                               ? Icon(
                                   Icons.person_rounded,
@@ -161,7 +169,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 8),
                   // Role Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: isAdmin
                           ? AppColors.secondaryOrangeSurface
@@ -200,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  
+
                   // Detail Information
                   Container(
                     decoration: BoxDecoration(
@@ -217,7 +228,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         _ProfileInfoRow(
                           icon: Icons.phone_android_rounded,
                           label: 'No. Telepon',
-                          value: _user?.phoneNumber != null &&
+                          value:
+                              _user?.phoneNumber != null &&
                                   _user!.phoneNumber!.isNotEmpty
                               ? _user!.phoneNumber!
                               : '-',
@@ -253,26 +265,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           title: 'Pengaturan Aplikasi',
                           color: AppColors.primaryGreen,
                           onTap: () async {
-                            await Navigator.pushNamed(context, AppRoutes.settings);
+                            await Navigator.pushNamed(
+                              context,
+                              AppRoutes.settings,
+                            );
                             _loadUserProfile();
                           },
                         ),
-                        _DividerLine(isDark: isDark),
-                        _ProfileMenuRow(
-                          icon: Icons.history_edu_rounded,
-                          title: 'Riwayat Reservasi',
-                          color: AppColors.statusActive,
-                          onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.reservationHistory);
-                          },
-                        ),
+                        if (_selectedApp != 'farm') ...[
+                          _DividerLine(isDark: isDark),
+                          _ProfileMenuRow(
+                            icon: Icons.history_edu_rounded,
+                            title: 'Riwayat Reservasi',
+                            color: AppColors.statusActive,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.reservationHistory,
+                              );
+                            },
+                          ),
+                        ],
                         _DividerLine(isDark: isDark),
                         _ProfileMenuRow(
                           icon: Icons.receipt_long_rounded,
                           title: 'Riwayat Transaksi',
                           color: AppColors.secondaryOrange,
                           onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.orderHistory);
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.orderHistory,
+                            );
                           },
                         ),
                       ],
@@ -285,10 +308,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.deleteRed.withValues(alpha: 0.1),
+                        backgroundColor: AppColors.deleteRed.withValues(
+                          alpha: 0.1,
+                        ),
                         foregroundColor: AppColors.deleteRed,
                         elevation: 0,
-                        side: const BorderSide(color: AppColors.deleteRed, width: 1),
+                        side: const BorderSide(
+                          color: AppColors.deleteRed,
+                          width: 1,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -337,9 +365,13 @@ class _ProfileInfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          Icon(icon,
-              color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
-              size: 24),
+          Icon(
+            icon,
+            color: isDark
+                ? AppColors.primaryGreenLight
+                : AppColors.primaryGreen,
+            size: 24,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -347,7 +379,9 @@ class _ProfileInfoRow extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Outfit',
                 fontSize: 15,
-                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                color: isDark
+                    ? AppColors.darkTextSecondary
+                    : AppColors.lightTextSecondary,
               ),
             ),
           ),
