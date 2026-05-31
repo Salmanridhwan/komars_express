@@ -24,24 +24,26 @@ class SeedData {
 
     // Check if menu_items already seeded
     final menuCount = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT COUNT(*) FROM menu_items'));
+      await db.rawQuery('SELECT COUNT(*) FROM menu_items'),
+    );
     if ((menuCount ?? 0) == 0) {
       await _seedMenuItems(db);
     }
 
     final tableCount = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT COUNT(*) FROM tables'));
+      await db.rawQuery('SELECT COUNT(*) FROM tables'),
+    );
     if ((tableCount ?? 0) == 0) {
       await _seedTables(db);
     }
 
     final farmCount = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT COUNT(*) FROM farm_packages'));
+      await db.rawQuery('SELECT COUNT(*) FROM farm_packages'),
+    );
     if ((farmCount ?? 0) == 0) {
       await _seedFarmPackages(db);
     }
   }
-
 
   static Future<void> _seedMenuItems(db) async {
     final menus = [
@@ -131,7 +133,8 @@ class SeedData {
       },
       {
         'name': 'Kopi Arabika Lokal',
-        'description': 'Kopi arabika single origin dari petani lokal Jawa Barat.',
+        'description':
+            'Kopi arabika single origin dari petani lokal Jawa Barat.',
         'price': 28000.0,
         'category': 'beverage',
         'image_path': '',
@@ -149,7 +152,8 @@ class SeedData {
       },
       {
         'name': 'Teh Herbal Rempah',
-        'description': 'Paduan jahe, sereh, dan kayu manis dari kebun herbal mitra.',
+        'description':
+            'Paduan jahe, sereh, dan kayu manis dari kebun herbal mitra.',
         'price': 20000.0,
         'category': 'beverage',
         'image_path': '',
@@ -165,13 +169,48 @@ class SeedData {
 
   static Future<void> _seedTables(db) async {
     final tables = [
-      {'table_number': 'A1', 'capacity': 2, 'location': 'Indoor', 'is_active': 1},
-      {'table_number': 'A2', 'capacity': 2, 'location': 'Indoor', 'is_active': 1},
-      {'table_number': 'A3', 'capacity': 4, 'location': 'Indoor', 'is_active': 1},
-      {'table_number': 'A4', 'capacity': 4, 'location': 'Indoor', 'is_active': 1},
-      {'table_number': 'B1', 'capacity': 4, 'location': 'Outdoor', 'is_active': 1},
-      {'table_number': 'B2', 'capacity': 6, 'location': 'Outdoor', 'is_active': 1},
-      {'table_number': 'B3', 'capacity': 6, 'location': 'Outdoor', 'is_active': 1},
+      {
+        'table_number': 'A1',
+        'capacity': 2,
+        'location': 'Indoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'A2',
+        'capacity': 2,
+        'location': 'Indoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'A3',
+        'capacity': 4,
+        'location': 'Indoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'A4',
+        'capacity': 4,
+        'location': 'Indoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'B1',
+        'capacity': 4,
+        'location': 'Outdoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'B2',
+        'capacity': 6,
+        'location': 'Outdoor',
+        'is_active': 1,
+      },
+      {
+        'table_number': 'B3',
+        'capacity': 6,
+        'location': 'Outdoor',
+        'is_active': 1,
+      },
       {'table_number': 'V1', 'capacity': 8, 'location': 'VIP', 'is_active': 1},
       {'table_number': 'V2', 'capacity': 10, 'location': 'VIP', 'is_active': 1},
     ];

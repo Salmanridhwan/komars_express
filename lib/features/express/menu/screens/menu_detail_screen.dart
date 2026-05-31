@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -45,7 +46,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     Color categoryColor;
     switch (widget.item.category.toLowerCase()) {
       case 'food':
@@ -70,12 +71,34 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                 tag: 'menu-image-${widget.item.id}',
                 child: Container(
                   color: isDark ? Colors.grey[800] : Colors.grey[200],
-                  child: widget.item.imagePath != null &&
+                  child:
+                      widget.item.imagePath != null &&
                           widget.item.imagePath!.isNotEmpty
-                      ? Image.file(
-                          File(widget.item.imagePath!),
-                          fit: BoxFit.cover,
-                        )
+                      ? (kIsWeb || widget.item.imagePath!.startsWith('http'))
+                            ? Image.network(
+                                widget.item.imagePath!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Center(
+                                      child: Icon(
+                                        Icons.broken_image_outlined,
+                                        size: 40,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                              )
+                            : Image.file(
+                                File(widget.item.imagePath!),
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Center(
+                                      child: Icon(
+                                        Icons.broken_image_outlined,
+                                        size: 40,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                              )
                       : Center(
                           child: Icon(
                             widget.item.category.toLowerCase() == 'drink'
@@ -102,7 +125,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: categoryColor,
                           borderRadius: BorderRadius.circular(20),
@@ -121,16 +147,25 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                           widget.item.farmSource!.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.farmBadgeBg,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppColors.farmBadgeBorder, width: 0.5),
+                            border: Border.all(
+                              color: AppColors.farmBadgeBorder,
+                              width: 0.5,
+                            ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.eco_rounded,
-                                  size: 12, color: AppColors.farmBadgeText),
+                              const Icon(
+                                Icons.eco_rounded,
+                                size: 12,
+                                color: AppColors.farmBadgeText,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 widget.item.farmSource!,
@@ -144,7 +179,7 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                             ],
                           ),
                         ),
-                      ]
+                      ],
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -170,7 +205,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                           fontFamily: 'Outfit',
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
-                          color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+                          color: isDark
+                              ? AppColors.primaryGreenLight
+                              : AppColors.primaryGreen,
                         ),
                       ),
                     ],
@@ -193,7 +230,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                       fontFamily: 'Outfit',
                       fontSize: 14,
                       height: 1.5,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -205,7 +244,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkCard : AppColors.primaryGreenSurface,
+                        color: isDark
+                            ? AppColors.darkCard
+                            : AppColors.primaryGreenSurface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark
@@ -218,8 +259,10 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.agriculture_rounded,
-                                  color: AppColors.primaryGreen),
+                              const Icon(
+                                Icons.agriculture_rounded,
+                                color: AppColors.primaryGreen,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Konsep Farm-to-Table',
@@ -227,7 +270,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                                   fontFamily: 'Outfit',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : AppColors.primaryGreenDark,
+                                  color: isDark
+                                      ? Colors.white
+                                      : AppColors.primaryGreenDark,
                                 ),
                               ),
                             ],
@@ -258,7 +303,9 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                           color: isDark ? AppColors.darkCard : Colors.grey[100],
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: isDark ? AppColors.darkDivider : Colors.grey[300]!,
+                            color: isDark
+                                ? AppColors.darkDivider
+                                : Colors.grey[300]!,
                           ),
                         ),
                         child: Row(
@@ -293,9 +340,13 @@ class _MenuDetailScreenState extends State<MenuDetailScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          onPressed: widget.item.isAvailable ? _addToCart : null,
+                          onPressed: widget.item.isAvailable
+                              ? _addToCart
+                              : null,
                           child: Text(
-                            widget.item.isAvailable ? 'Tambah ke Keranjang' : 'Stok Habis',
+                            widget.item.isAvailable
+                                ? 'Tambah ke Keranjang'
+                                : 'Stok Habis',
                             style: const TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 15,

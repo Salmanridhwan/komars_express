@@ -27,7 +27,12 @@ class MenuDao {
 
   Future<MenuItemModel?> getById(int id) async {
     final db = await _db.database;
-    final maps = await db.query('menu_items', where: 'id = ?', whereArgs: [id], limit: 1);
+    final maps = await db.query(
+      'menu_items',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
     if (maps.isEmpty) return null;
     return MenuItemModel.fromMap(maps.first);
   }
@@ -64,10 +69,11 @@ class MenuDao {
 
   Future<int> delete(int id) async {
     final db = await _db.database;
-    return await db.delete(
-      'menu_items',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('menu_items', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAll() async {
+    final db = await _db.database;
+    return await db.delete('menu_items');
   }
 }

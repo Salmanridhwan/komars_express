@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -20,7 +21,8 @@ class MenuCard extends StatefulWidget {
   State<MenuCard> createState() => _MenuCardState();
 }
 
-class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin {
+class _MenuCardState extends State<MenuCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
 
@@ -58,7 +60,7 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Category Colors Mapping
     Color categoryColor;
     switch (widget.item.category.toLowerCase()) {
@@ -91,7 +93,9 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                 ),
             ],
             border: Border.all(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider.withValues(alpha: 0.5),
+              color: isDark
+                  ? AppColors.darkDivider
+                  : AppColors.lightDivider.withValues(alpha: 0.5),
             ),
           ),
           child: Column(
@@ -103,26 +107,51 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                   fit: StackFit.expand,
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(18),
+                      ),
                       child: Hero(
                         tag: 'menu-image-${widget.item.id}',
                         child: Container(
                           width: double.infinity,
                           color: isDark ? Colors.grey[800] : Colors.grey[200],
-                          child: widget.item.imagePath != null &&
+                          child:
+                              widget.item.imagePath != null &&
                                   widget.item.imagePath!.isNotEmpty
-                              ? Image.file(
-                                  File(widget.item.imagePath!),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Center(
-                                    child: Icon(Icons.broken_image_outlined,
-                                        size: 40, color: Colors.grey),
-                                  ),
-                                )
+                              ? (kIsWeb ||
+                                        widget.item.imagePath!.startsWith(
+                                          'http',
+                                        ))
+                                    ? Image.network(
+                                        widget.item.imagePath!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image_outlined,
+                                                    size: 40,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                      )
+                                    : Image.file(
+                                        File(widget.item.imagePath!),
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image_outlined,
+                                                    size: 40,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                      )
                               : Center(
                                   child: Icon(
-                                    widget.item.category.toLowerCase() == 'drink'
+                                    widget.item.category.toLowerCase() ==
+                                            'drink'
                                         ? Icons.local_drink_rounded
                                         : Icons.restaurant_rounded,
                                     size: 40,
@@ -132,53 +161,58 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                         ),
                       ),
                     ),
-                  // Category Badge
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: categoryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        widget.item.category.toUpperCase(),
-                        style: const TextStyle(
-                          fontFamily: 'Outfit',
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Availability Overlays
-                  if (!widget.item.isAvailable)
-                    Positioned.fill(
+                    // Category Badge
+                    Positioned(
+                      top: 10,
+                      left: 10,
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        child: const Center(
-                          child: Text(
-                            'HABIS',
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
+                        decoration: BoxDecoration(
+                          color: categoryColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          widget.item.category.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ),
-                ],
+                    // Availability Overlays
+                    if (!widget.item.isAvailable)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(18),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'HABIS',
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-              
-            // Info content
+
+              // Info content
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
@@ -189,11 +223,17 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                         widget.item.farmSource!.isNotEmpty)
                       Container(
                         margin: const EdgeInsets.only(bottom: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.farmBadgeBg,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AppColors.farmBadgeBorder, width: 0.5),
+                          border: Border.all(
+                            color: AppColors.farmBadgeBorder,
+                            width: 0.5,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -220,7 +260,7 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                           ],
                         ),
                       ),
-                    
+
                     // Menu Name
                     Text(
                       widget.item.name,
@@ -233,14 +273,16 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    
+
                     // Description
                     Text(
                       widget.item.description,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 11,
-                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.lightTextSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -257,10 +299,13 @@ class _MenuCardState extends State<MenuCard> with SingleTickerProviderStateMixin
                             fontFamily: 'Outfit',
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
-                            color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+                            color: isDark
+                                ? AppColors.primaryGreenLight
+                                : AppColors.primaryGreen,
                           ),
                         ),
-                        if (widget.item.isAvailable && widget.onAddToCart != null)
+                        if (widget.item.isAvailable &&
+                            widget.onAddToCart != null)
                           GestureDetector(
                             onTap: widget.onAddToCart,
                             child: Container(
