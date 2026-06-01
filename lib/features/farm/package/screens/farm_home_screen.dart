@@ -8,6 +8,7 @@ import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../models/farm_package_model.dart';
 import '../../../home/screens/profile_screen.dart';
+import '../../../farm/mitra/screens/farm_harvest_sale_screen.dart';
 
 /// Home utama pelanggan Komars Farm.
 /// Memiliki 3 tab: Beranda, Keuangan, Profil.
@@ -43,6 +44,8 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
       case 1:
         return _buildKeuangan();
       case 2:
+        return FarmHarvestSaleScreen(userId: _user?.id ?? 0);
+      case 3:
         return const ProfileScreen(embedded: true);
       default:
         return _FarmBeranda(user: _user);
@@ -123,6 +126,13 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
             selectedIcon: Icon(Icons.account_balance_wallet_rounded,
                 color: AppColors.primaryGreen),
             label: 'Keuangan',
+          ),
+          NavigationDestination(
+            key: ValueKey('farm_nav_sell'),
+            icon: Icon(Icons.sell_outlined),
+            selectedIcon: Icon(Icons.sell_rounded,
+                color: AppColors.primaryGreen),
+            label: 'Jual Panen',
           ),
           NavigationDestination(
             key: ValueKey('farm_nav_profile'),

@@ -6,6 +6,7 @@ import 'package:komars_express/core/database/database_helper.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../../home/screens/profile_screen.dart';
+import '../../../farm/mitra/screens/farm_mitra_admin_screen.dart';
 import 'farm_management_screen.dart';
 
 class FarmAdminDashboard extends StatefulWidget {
@@ -42,6 +43,8 @@ class _FarmAdminDashboardState extends State<FarmAdminDashboard> {
       case 1:
         return const FarmManagementScreen(embedded: true);
       case 2:
+        return const FarmMitraAdminScreen(embedded: true);
+      case 3:
         return const ProfileScreen(embedded: true);
       default:
         return _AdminDashboardTab(admin: _admin);
@@ -75,6 +78,12 @@ class _FarmAdminDashboardState extends State<FarmAdminDashboard> {
             label: 'Manajemen',
           ),
           NavigationDestination(
+            key: ValueKey('farm_admin_nav_mitra'),
+            icon: Icon(Icons.handshake_outlined),
+            selectedIcon: Icon(Icons.handshake_rounded, color: AppColors.primaryGreen),
+            label: 'Mitra',
+          ),
+          NavigationDestination(
             key: ValueKey('farm_admin_nav_profile'),
             icon: Icon(Icons.person_outline_rounded),
             selectedIcon: Icon(Icons.person_rounded, color: AppColors.primaryGreen),
@@ -98,6 +107,7 @@ class _AdminDashboardTab extends StatefulWidget {
 
 class _AdminDashboardTabState extends State<_AdminDashboardTab> {
   int _totalPackages = 0;
+  int _totalMitra = 0;
   bool _loading = true;
 
   @override
@@ -109,11 +119,16 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
   Future<void> _loadStats() async {
     setState(() => _loading = true);
     try {
-      final dao = DatabaseHelper.instance.farmPackageDao;
-      final packages = await dao.getAllPackages();
+      await DatabaseHelper.instance.database;
+      final pkgDao = DatabaseHelper.instance.farmPackageDao;
+      final mitraDao = DatabaseHelper.instance.mitraDao;
+      await mitraDao.seedDefaultMitra();
+      final packages = await pkgDao.getAllPackages();
+      final mitraCount = await mitraDao.count();
 
       setState(() {
         _totalPackages = packages.length;
+        _totalMitra = mitraCount;
         _loading = false;
       });
     } catch (e) {
@@ -226,11 +241,11 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: _StatCard(
                             title: 'Total Mitra',
-                            value: '0',
-                            icon: Icons.people_rounded,
+                            value: _totalMitra.toString(),
+                            icon: Icons.handshake_rounded,
                             color: AppColors.secondaryOrange,
                           ),
                         ),

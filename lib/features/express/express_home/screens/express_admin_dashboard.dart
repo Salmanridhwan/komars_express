@@ -14,6 +14,7 @@ import '../../menu/screens/menu_management_screen.dart';
 import '../../table/screens/table_management_screen.dart';
 import '../../order/screens/order_history_screen.dart';
 import '../../reservation/screens/reservation_history_screen.dart';
+import '../../harvest/screens/express_harvest_inbox_screen.dart';
 
 /// Dashboard utama admin Komars Express.
 /// Memiliki 5 tab: Dashboard, Menu, Meja, Pesanan, Reservasi.
@@ -56,6 +57,8 @@ class _ExpressAdminDashboardState extends State<ExpressAdminDashboard> {
         return const OrderHistoryScreen(embedded: true);
       case 4:
         return const ReservationHistoryScreen(embedded: true);
+      case 5:
+        return const ExpressHarvestInboxScreen(embedded: true);
       default:
         return _AdminDashboardTab(admin: _admin);
     }
@@ -109,6 +112,13 @@ class _ExpressAdminDashboardState extends State<ExpressAdminDashboard> {
             selectedIcon: Icon(Icons.event_seat_rounded,
                 color: AppColors.secondaryOrange),
             label: 'Reservasi',
+          ),
+          NavigationDestination(
+            key: ValueKey('admin_nav_harvest'),
+            icon: Icon(Icons.agriculture_outlined),
+            selectedIcon: Icon(Icons.agriculture_rounded,
+                color: AppColors.secondaryOrange),
+            label: 'Panen',
           ),
         ],
       ),

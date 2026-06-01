@@ -1,0 +1,581 @@
+import 'package:flutter/material.dart';
+import 'package:komars_express/core/constants/app_colors.dart';
+import 'package:komars_express/core/database/database_helper.dart';
+import '../models/mitra_model.dart';
+
+/// Layar daftar mitra untuk Admin KomarFarm.
+/// Menampilkan semua mitra yang bekerja sama beserta detail PT.
+class FarmMitraAdminScreen extends StatefulWidget {
+  final bool embedded;
+  const FarmMitraAdminScreen({super.key, this.embedded = false});
+
+  @override
+  State<FarmMitraAdminScreen> createState() => _FarmMitraAdminScreenState();
+}
+
+class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
+  List<MitraPartnership> _mitras = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMitra();
+  }
+
+  Future<void> _loadMitra() async {
+    setState(() => _loading = true);
+    try {
+      await DatabaseHelper.instance.database; // ensure init
+      final dao = DatabaseHelper.instance.mitraDao;
+      await dao.seedDefaultMitra();
+      final list = await dao.getAll();
+      if (mounted) setState(() { _mitras = list; _loading = false; });
+    } catch (e) {
+      debugPrint('Error loading mitra: $e');
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: widget.embedded
+          ? null
+          : AppBar(
+              title: const Text('Manajemen Mitra'),
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+            ),
+      body: Column(
+        children: [
+          // ── Header Banner ─────────────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mitra Kerja Sama',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Daftar perusahaan mitra yang bekerja sama\ndengan Komars Farm',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _HeaderBadge(
+                      icon: Icons.handshake_rounded,
+                      label: '${_mitras.length} Mitra',
+                    ),
+                    const SizedBox(width: 10),
+                    _HeaderBadge(
+                      icon: Icons.verified_rounded,
+                      label:
+                          '${_mitras.where((m) => m.isActive).length} Aktif',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── List ──────────────────────────────────────────────────────────
+          Expanded(
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryGreen))
+                : _mitras.isEmpty
+                    ? _buildEmpty()
+                    : RefreshIndicator(
+                        onRefresh: _loadMitra,
+                        color: AppColors.primaryGreen,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _mitras.length,
+                          itemBuilder: (ctx, i) =>
+                              _MitraCard(mitra: _mitras[i]),
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.handshake_outlined,
+              size: 72, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'Belum ada mitra terdaftar',
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Header Badge ──────────────────────────────────────────────────────────────
+
+class _HeaderBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _HeaderBadge({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Mitra Card ────────────────────────────────────────────────────────────────
+
+class _MitraCard extends StatelessWidget {
+  final MitraPartnership mitra;
+  const _MitraCard({required this.mitra});
+
+  IconData _resolveIcon(String? logoIcon) {
+    switch (logoIcon) {
+      case 'restaurant':
+        return Icons.restaurant_rounded;
+      case 'store':
+        return Icons.store_rounded;
+      case 'factory':
+        return Icons.factory_rounded;
+      default:
+        return Icons.business_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: () => _showDetail(context),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: mitra.isActive
+                ? AppColors.primaryGreen.withValues(alpha: 0.25)
+                : Colors.grey.withValues(alpha: 0.2),
+          ),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: AppColors.primaryGreen.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Icon
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.expressGradient,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      _resolveIcon(mitra.logoIcon),
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                mitra.mitraName,
+                                style: const TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: mitra.isActive
+                                    ? AppColors.primaryGreenSurface
+                                    : Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                mitra.isActive ? 'Aktif' : 'Tidak Aktif',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: mitra.isActive
+                                      ? AppColors.primaryGreenDark
+                                      : Colors.grey.shade500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          mitra.companyName,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 12,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.category_outlined,
+                                size: 12, color: AppColors.secondaryOrange),
+                            const SizedBox(width: 4),
+                            Text(
+                              mitra.category,
+                              style: const TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 11,
+                                color: AppColors.secondaryOrange,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios_rounded,
+                      size: 13, color: Colors.grey),
+                ],
+              ),
+            ),
+            // ── Footer ─────────────────────────────────────────────────────
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.04)
+                    : AppColors.lightCard,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 12, color: Colors.grey),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Bergabung: ${mitra.joinedDate}',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.alternate_email_rounded,
+                      size: 12, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    mitra.contact,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDetail(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => _MitraDetailSheet(mitra: mitra),
+    );
+  }
+}
+
+// ── Detail Bottom Sheet ───────────────────────────────────────────────────────
+
+class _MitraDetailSheet extends StatelessWidget {
+  final MitraPartnership mitra;
+  const _MitraDetailSheet({required this.mitra});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.85,
+      builder: (ctx, scrollController) => SingleChildScrollView(
+        controller: scrollController,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.expressGradient,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.restaurant_rounded,
+                        color: Colors.white, size: 30),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          mitra.mitraName,
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: mitra.isActive
+                                ? AppColors.primaryGreenSurface
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            mitra.isActive ? '✓ Mitra Aktif' : 'Tidak Aktif',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: mitra.isActive
+                                  ? AppColors.primaryGreenDark
+                                  : Colors.grey.shade500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _DetailRow(icon: Icons.business_rounded,
+                  label: 'Perusahaan', value: mitra.companyName, isDark: isDark),
+              _DetailRow(icon: Icons.category_rounded,
+                  label: 'Kategori', value: mitra.category, isDark: isDark),
+              _DetailRow(icon: Icons.email_rounded,
+                  label: 'Kontak', value: mitra.contact, isDark: isDark),
+              _DetailRow(icon: Icons.calendar_month_rounded,
+                  label: 'Tgl Bergabung', value: mitra.joinedDate, isDark: isDark),
+              if (mitra.description != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Tentang Mitra',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : AppColors.lightCard,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    mitra.description!,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 13,
+                      height: 1.6,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isDark;
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryGreenSurface,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.primaryGreen, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 11,
+                    color: isDark
+                        ? AppColors.darkTextSecondary
+                        : Colors.grey.shade500,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

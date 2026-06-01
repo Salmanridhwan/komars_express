@@ -46,6 +46,13 @@ class AppRoutes {
   // ─── Farm Admin ───────────────────────────────────────────────────────────
   static const String farmAdminDashboard = '/farm/admin';
   static const String farmManagement = '/farm/admin/package/manage';
+  static const String farmMitraAdmin = '/farm/admin/mitra';
+
+  // ─── Farm Mitra (User) ────────────────────────────────────────────────────
+  static const String farmHarvestSale = '/farm/harvest/sell';
+
+  // ─── Express Harvest Inbox ────────────────────────────────────────────────
+  static const String expressHarvestInbox = '/express/admin/harvest/inbox';
 
   // ─── Shared Profile ───────────────────────────────────────────────────────
   static const String profile = '/profile';

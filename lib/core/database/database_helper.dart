@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:komars_express/features/farm/package/db/farm_package_dao.dart';
 import 'package:komars_express/features/farm/finance/db/financial_record_dao.dart';
+import 'package:komars_express/features/farm/mitra/db/mitra_dao.dart';
+import 'package:komars_express/features/farm/mitra/db/harvest_sale_dao.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
@@ -11,9 +13,13 @@ class DatabaseHelper {
 
   late FarmPackageDao _farmPackageDao;
   late FinancialRecordDao _financialRecordDao;
+  late MitraDao _mitraDao;
+  late HarvestSaleDao _harvestSaleDao;
 
   FarmPackageDao get farmPackageDao => _farmPackageDao;
   FinancialRecordDao get financialRecordDao => _financialRecordDao;
+  MitraDao get mitraDao => _mitraDao;
+  HarvestSaleDao get harvestSaleDao => _harvestSaleDao;
 
   static Database? _db;
 
@@ -22,6 +28,8 @@ class DatabaseHelper {
     // Initialize DAOs with the database instance
     _farmPackageDao = FarmPackageDao(_db!);
     _financialRecordDao = FinancialRecordDao(_db!);
+    _mitraDao = MitraDao(_db!);
+    _harvestSaleDao = HarvestSaleDao(_db!);
     return _db!;
   }
 
@@ -31,7 +39,7 @@ class DatabaseHelper {
       return await factory.openDatabase(
         'komars.db',
         options: OpenDatabaseOptions(
-          version: 2,
+          version: 3,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -42,7 +50,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'komars.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
@@ -59,6 +67,41 @@ class DatabaseHelper {
       await db.execute(
         "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'",
       );
+    }
+    // v2 -> v3: add mitra & harvest tables
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS mitra_partnerships (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          mitra_name TEXT NOT NULL,
+          company_name TEXT NOT NULL,
+          category TEXT NOT NULL,
+          contact TEXT NOT NULL,
+          joined_date TEXT NOT NULL,
+          is_active INTEGER NOT NULL DEFAULT 1,
+          description TEXT,
+          logo_icon TEXT
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS harvest_sales (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          farmer_user_id INTEGER NOT NULL,
+          mitra_id INTEGER NOT NULL,
+          mitra_name TEXT NOT NULL,
+          farm_type TEXT NOT NULL,
+          harvest_name TEXT NOT NULL,
+          quantity_kg REAL NOT NULL,
+          price_per_kg REAL NOT NULL,
+          total_price REAL NOT NULL,
+          status TEXT NOT NULL DEFAULT 'Menunggu',
+          notes TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY(farmer_user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY(mitra_id) REFERENCES mitra_partnerships(id)
+        )
+      ''');
     }
   }
 
@@ -183,6 +226,42 @@ class DatabaseHelper {
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE(user_id, farm_type, record_date) ON CONFLICT REPLACE
+      )
+    ''');
+
+    // 9. mitra_partnerships
+    await db.execute('''
+      CREATE TABLE mitra_partnerships (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mitra_name TEXT NOT NULL,
+        company_name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        contact TEXT NOT NULL,
+        joined_date TEXT NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        description TEXT,
+        logo_icon TEXT
+      )
+    ''');
+
+    // 10. harvest_sales
+    await db.execute('''
+      CREATE TABLE harvest_sales (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        farmer_user_id INTEGER NOT NULL,
+        mitra_id INTEGER NOT NULL,
+        mitra_name TEXT NOT NULL,
+        farm_type TEXT NOT NULL,
+        harvest_name TEXT NOT NULL,
+        quantity_kg REAL NOT NULL,
+        price_per_kg REAL NOT NULL,
+        total_price REAL NOT NULL,
+        status TEXT NOT NULL DEFAULT 'Menunggu',
+        notes TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(farmer_user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(mitra_id) REFERENCES mitra_partnerships(id)
       )
     ''');
   }

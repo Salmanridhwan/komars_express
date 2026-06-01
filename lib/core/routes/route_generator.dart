@@ -34,6 +34,9 @@ import '../../features/farm/package/screens/farm_management_screen.dart';
 import '../../features/farm/package/screens/farm_package_detail_screen.dart';
 import '../../features/farm/package/models/farm_package_model.dart';
 import '../../features/farm/finance/screens/finance_history_screen.dart';
+import '../../features/farm/mitra/screens/farm_mitra_admin_screen.dart';
+import '../../features/farm/mitra/screens/farm_harvest_sale_screen.dart';
+import '../../features/express/harvest/screens/express_harvest_inbox_screen.dart';
 
 class RouteGenerator {
   RouteGenerator._();
@@ -129,6 +132,16 @@ class RouteGenerator {
         return _slide(const FarmAdminDashboard());
       case AppRoutes.farmManagement:
         return _slide(const FarmManagementScreen());
+      case AppRoutes.farmMitraAdmin:
+        return _slide(const FarmMitraAdminScreen());
+
+      // ── Farm Harvest Sale ──────────────────────────────────────────────────
+      case AppRoutes.farmHarvestSale:
+        return _slide(FarmHarvestSaleScreen(userId: args as int? ?? 0));
+
+      // ── Express Harvest Inbox ──────────────────────────────────────────────
+      case AppRoutes.expressHarvestInbox:
+        return _slide(const ExpressHarvestInboxScreen());
 
       // ── Legacy Fallback ───────────────────────────────────────────────────
       default:
