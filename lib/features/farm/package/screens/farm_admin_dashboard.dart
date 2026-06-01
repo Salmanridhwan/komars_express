@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/database/database_helper.dart';
+import 'package:komars_express/core/routes/app_routes.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../../home/screens/profile_screen.dart';
@@ -53,43 +54,61 @@ class _FarmAdminDashboardState extends State<FarmAdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        selectedIndex: _tabIndex,
-        onDestinationSelected: _onNavTap,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkSurface
-            : Colors.white,
-        indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.15),
-        destinations: const [
-          NavigationDestination(
-            key: ValueKey('farm_admin_nav_dashboard'),
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon:
-                Icon(Icons.dashboard_rounded, color: AppColors.primaryGreen),
-            label: 'Dashboard',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+              width: 1,
+            ),
           ),
-          NavigationDestination(
-            key: ValueKey('farm_admin_nav_package'),
-            icon: Icon(Icons.spa_outlined),
-            selectedIcon: Icon(Icons.spa_rounded, color: AppColors.primaryGreen),
-            label: 'Manajemen',
-          ),
-          NavigationDestination(
-            key: ValueKey('farm_admin_nav_mitra'),
-            icon: Icon(Icons.handshake_outlined),
-            selectedIcon: Icon(Icons.handshake_rounded, color: AppColors.primaryGreen),
-            label: 'Mitra',
-          ),
-          NavigationDestination(
-            key: ValueKey('farm_admin_nav_profile'),
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: AppColors.primaryGreen),
-            label: 'Profil',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          height: 64,
+          elevation: 0,
+          selectedIndex: _tabIndex,
+          onDestinationSelected: _onNavTap,
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.18),
+          destinations: const [
+            NavigationDestination(
+              key: ValueKey('farm_admin_nav_dashboard'),
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon:
+                  Icon(Icons.dashboard_rounded, color: AppColors.primaryGreen),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              key: ValueKey('farm_admin_nav_package'),
+              icon: Icon(Icons.spa_outlined),
+              selectedIcon: Icon(Icons.spa_rounded, color: AppColors.primaryGreen),
+              label: 'Manajemen',
+            ),
+            NavigationDestination(
+              key: ValueKey('farm_admin_nav_mitra'),
+              icon: Icon(Icons.handshake_outlined),
+              selectedIcon: Icon(Icons.handshake_rounded, color: AppColors.primaryGreen),
+              label: 'Mitra',
+            ),
+            NavigationDestination(
+              key: ValueKey('farm_admin_nav_profile'),
+              icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(Icons.person_rounded, color: AppColors.primaryGreen),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -137,126 +156,310 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final firstName = widget.admin?.name.split(' ').first ?? 'Admin';
-
-    return RefreshIndicator(
-      onRefresh: _loadStats,
-      color: AppColors.primaryGreen,
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 140,
-            floating: false,
-            pinned: true,
-            automaticallyImplyLeading: false,
-            backgroundColor: AppColors.primaryGreen,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-              title: const Text(
-                'Komars Farm Admin',
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  fontSize: 18,
+  Future<void> _logout() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  size: 32,
+                  color: AppColors.primaryGreen,
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryGreen,
-                      AppColors.primaryGreen.withValues(alpha: 0.8)
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+              const SizedBox(height: 18),
+              const Text(
+                'Keluar dari Admin?',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
                 ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      right: -30,
-                      top: -30,
-                      child: Icon(
-                        Icons.agriculture_rounded,
-                        size: 150,
-                        color: Colors.white.withValues(alpha: 0.1),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Sesi masuk admin Komars Farm akan diakhiri dan Anda harus masuk kembali.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 13,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        side: BorderSide(
+                          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
                       ),
                     ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.deleteRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Keluar',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (confirm == true) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(PrefKeys.userSessionToken);
+      await prefs.remove(PrefKeys.userRole);
+      await prefs.remove(PrefKeys.selectedApp);
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, AppRoutes.login, (r) => false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.agriculture_rounded,
+                  color: Colors.white, size: 18),
+            ),
+            const SizedBox(width: 8),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Komars Farm',
+                    style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Colors.white)),
+                Text('Panel Admin',
+                    style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 10,
+                        color: Colors.white70)),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.4)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.admin_panel_settings_rounded,
+                    size: 14, color: Colors.white),
+                SizedBox(width: 4),
+                Text('ADMIN',
+                    style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: _logout,
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
+          : RefreshIndicator(
+              onRefresh: _loadStats,
+              color: AppColors.primaryGreen,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Greeting
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selamat Datang, ${widget.admin?.name ?? 'Admin'}',
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Panel manajemen investasi Komars Farm',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+                    Text('Ringkasan Hari Ini',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+
+                    // Stats Grid
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.5,
+                      children: [
+                        _StatCard(
+                          icon: Icons.spa_rounded,
+                          title: 'Total Paket',
+                          value: '$_totalPackages paket',
+                          color: AppColors.primaryGreen,
+                        ),
+                        _StatCard(
+                          icon: Icons.handshake_rounded,
+                          title: 'Total Mitra',
+                          value: '$_totalMitra mitra',
+                          color: AppColors.primaryGreen,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+                    Text('Akses Cepat Admin',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 12),
+
+                    _AdminQuickAction(
+                      icon: Icons.spa_rounded,
+                      title: 'Kelola Paket Farm',
+                      subtitle: 'Tambah, edit, hapus paket investasi',
+                      color: AppColors.primaryGreen,
+                      onTap: () => Navigator.pushNamed(
+                          context, AppRoutes.farmManagement),
+                    ),
+                    const SizedBox(height: 10),
+                    _AdminQuickAction(
+                      icon: Icons.handshake_rounded,
+                      title: 'Kelola Kemitraan',
+                      subtitle: 'Pantau daftar mitra kerja sama',
+                      color: AppColors.primaryGreen,
+                      onTap: () => Navigator.pushNamed(
+                          context, AppRoutes.farmMitraAdmin),
+                    ),
+                    const SizedBox(height: 10),
+                    _AdminQuickAction(
+                      icon: Icons.person_rounded,
+                      title: 'Profil Admin',
+                      subtitle: widget.admin?.email ?? '',
+                      color: AppColors.primaryGreen,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.profile),
+                    ),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Selamat Datang, $firstName!',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontFamily: 'Outfit',
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Ringkasan data investasi Komars Farm',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  if (_loading)
-                    const Center(
-                        child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: CircularProgressIndicator(
-                          color: AppColors.primaryGreen),
-                    ))
-                  else
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Total Paket',
-                            value: _totalPackages.toString(),
-                            icon: Icons.spa_rounded,
-                            color: AppColors.primaryGreen,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _StatCard(
-                            title: 'Total Mitra',
-                            value: _totalMitra.toString(),
-                            icon: Icons.handshake_rounded,
-                            color: AppColors.secondaryOrange,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -278,49 +481,109 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Outfit',
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[500],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontFamily: 'Outfit',
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 10,
+                      color: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.lightTextSecondary)),
+              Text(value,
+                  style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800)),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AdminQuickAction extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+  const _AdminQuickAction(
+      {required this.icon,
+      required this.title,
+      required this.subtitle,
+      required this.color,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border:
+              Border.all(color: isDark ? AppColors.darkDivider : color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
+                  Text(subtitle,
+                      style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : AppColors.lightTextSecondary)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }

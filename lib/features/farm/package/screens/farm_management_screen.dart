@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import '../models/farm_package_model.dart';
+import 'farm_package_form_screen.dart';
 
 class FarmManagementScreen extends StatefulWidget {
   final bool embedded;
@@ -89,127 +90,41 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {int maxLines = 1, bool isNumber = false}) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontFamily: 'Outfit', fontSize: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-    );
-  }
 
-  void _showCreateEditDialog({FarmPackage? package}) {
-    final titleController = TextEditingController(text: package?.title ?? '');
-    final descriptionController = TextEditingController(text: package?.description ?? '');
-    final farmTypeController = TextEditingController(text: package?.farmType ?? 'ayam');
-    final minCapitalController = TextEditingController(text: package?.initialCapitalMin.toString() ?? '');
-    final recCapitalController = TextEditingController(text: package?.initialCapitalRec.toString() ?? '');
-    final harvestDaysController = TextEditingController(text: package?.harvestTimeDays.toString() ?? '');
-    final roiMonthsController = TextEditingController(text: package?.roiMonths.toString() ?? '');
-    final monthlyIncomeController = TextEditingController(text: package?.monthlyIncomeEst.toString() ?? '');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(package == null ? 'Create Package' : 'Edit Package', style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField(titleController, 'Title'),
-              const SizedBox(height: 12),
-              _buildTextField(descriptionController, 'Description', maxLines: 3),
-              const SizedBox(height: 12),
-              _buildTextField(farmTypeController, 'Farm Type'),
-              const SizedBox(height: 12),
-              _buildTextField(minCapitalController, 'Min Capital', isNumber: true),
-              const SizedBox(height: 12),
-              _buildTextField(recCapitalController, 'Rec Capital', isNumber: true),
-              const SizedBox(height: 12),
-              _buildTextField(harvestDaysController, 'Harvest Days', isNumber: true),
-              const SizedBox(height: 12),
-              _buildTextField(roiMonthsController, 'ROI Months', isNumber: true),
-              const SizedBox(height: 12),
-              _buildTextField(monthlyIncomeController, 'Monthly Income Est.', isNumber: true),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final newPackage = FarmPackage(
-                  id: package?.id ?? 0,
-                  farmType: farmTypeController.text,
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  initialCapitalMin: double.parse(minCapitalController.text),
-                  initialCapitalRec: double.parse(recCapitalController.text),
-                  harvestTimeDays: int.parse(harvestDaysController.text),
-                  roiMonths: int.parse(roiMonthsController.text),
-                  monthlyIncomeEst: double.parse(monthlyIncomeController.text),
-                  steps: package?.steps ?? [],
-                  equipmentList: package?.equipmentList ?? [],
-                );
-
-                final dao = _dbHelper.farmPackageDao;
-                if (package == null) {
-                  await dao.insertPackage(newPackage);
-                } else {
-                  await dao.updatePackage(newPackage);
-                }
-
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        package == null ? 'Package created' : 'Package updated',
-                      ),
-                    ),
-                  );
-                  await _loadPackages();
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                }
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final content = Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: widget.embedded ? null : AppBar(
-        title: const Text('Manage Farm Packages', style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
+      appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
+        title: const Text(
+          'Kelola Paket Investasi',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateEditDialog(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FarmPackageFormScreen(),
+            ),
+          );
+          if (result == true) {
+            _loadPackages();
+          }
+        },
         backgroundColor: AppColors.primaryGreen,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Add Package', style: TextStyle(fontFamily: 'Outfit', color: Colors.white, fontWeight: FontWeight.w600)),
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add_rounded),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
@@ -255,7 +170,17 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
                     borderRadius: BorderRadius.circular(16),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
-                      onTap: () => _showCreateEditDialog(package: package),
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FarmPackageFormScreen(package: package),
+                          ),
+                        );
+                        if (result == true) {
+                          _loadPackages();
+                        }
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
@@ -322,7 +247,17 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
                               itemBuilder: (context) => [
                                 PopupMenuItem(
                                   onTap: () {
-                                    Future.delayed(Duration.zero, () => _showCreateEditDialog(package: package));
+                                    Future.delayed(Duration.zero, () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => FarmPackageFormScreen(package: package),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _loadPackages();
+                                      }
+                                    });
                                   },
                                   child: const Text('Edit', style: TextStyle(fontFamily: 'Outfit')),
                                 ),

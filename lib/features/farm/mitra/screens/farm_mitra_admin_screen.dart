@@ -40,35 +40,32 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Manajemen Mitra'),
-              backgroundColor: AppColors.primaryGreen,
-              foregroundColor: Colors.white,
-            ),
+      appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
+        title: const Text(
+          'Mitra Kerja Sama',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Column(
         children: [
           // ── Header Banner ─────────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
             decoration: const BoxDecoration(
               gradient: AppColors.primaryGradient,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Mitra Kerja Sama',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Text(
                   'Daftar perusahaan mitra yang bekerja sama\ndengan Komars Farm',
                   style: TextStyle(
