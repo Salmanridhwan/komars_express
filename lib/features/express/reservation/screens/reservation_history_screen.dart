@@ -221,6 +221,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
               itemBuilder: (ctx, i) => _ReservationCard(
                 reservation: _reservations[i],
                 isDark: isDark,
+                isAdminView: widget.embedded,
                 onTap: () async {
                   await Navigator.pushNamed(
                     ctx,
@@ -239,6 +240,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
 class _ReservationCard extends StatelessWidget {
   final ReservationModel reservation;
   final bool isDark;
+  final bool isAdminView;
   final VoidCallback onTap, onCancel;
 
   const _ReservationCard({
@@ -246,6 +248,7 @@ class _ReservationCard extends StatelessWidget {
     required this.isDark,
     required this.onTap,
     required this.onCancel,
+    this.isAdminView = false,
   });
 
   @override
@@ -300,7 +303,7 @@ class _ReservationCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (widget.embedded && reservation.userName != null)
+                          if (isAdminView && reservation.userName != null)
                             Text(
                               reservation.userName!,
                               style: const TextStyle(
