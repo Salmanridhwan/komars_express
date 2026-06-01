@@ -7,10 +7,11 @@ import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../order/screens/order_history_screen.dart';
 import '../../menu/screens/menu_list_screen.dart';
+import '../../reservation/screens/reservation_history_screen.dart';
 import '../../../home/screens/profile_screen.dart';
 
 /// Home utama pelanggan Komars Express.
-/// Memiliki 3 tab: Beranda, Pesanan, Profil.
+/// Memiliki 4 tab: Beranda, Katalog, Pesanan, Reservasi, Profil.
 class ExpressCustomerHome extends StatefulWidget {
   const ExpressCustomerHome({super.key});
 
@@ -47,6 +48,8 @@ class _ExpressCustomerHomeState extends State<ExpressCustomerHome> {
       case 2:
         return const OrderHistoryScreen(embedded: true);
       case 3:
+        return const ReservationHistoryScreen(embedded: true);
+      case 4:
         return const ProfileScreen(embedded: true);
       default:
         return _ExpressBeranda(user: _user);
@@ -61,34 +64,54 @@ class _ExpressCustomerHomeState extends State<ExpressCustomerHome> {
         height: 64,
         selectedIndex: _tabIndex,
         onDestinationSelected: _onNavTap,
-        backgroundColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSurface
-                : Colors.white,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
         indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(
             key: ValueKey('nav_home'),
             icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded, color: AppColors.secondaryOrange),
+            selectedIcon: Icon(
+              Icons.home_rounded,
+              color: AppColors.secondaryOrange,
+            ),
             label: 'Beranda',
           ),
           NavigationDestination(
             key: ValueKey('nav_menu'),
             icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book_rounded, color: AppColors.secondaryOrange),
+            selectedIcon: Icon(
+              Icons.menu_book_rounded,
+              color: AppColors.secondaryOrange,
+            ),
             label: 'Katalog',
           ),
           NavigationDestination(
             key: ValueKey('nav_orders'),
             icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded, color: AppColors.secondaryOrange),
+            selectedIcon: Icon(
+              Icons.receipt_long_rounded,
+              color: AppColors.secondaryOrange,
+            ),
             label: 'Pesanan',
+          ),
+          NavigationDestination(
+            key: ValueKey('nav_reservations'),
+            icon: Icon(Icons.table_restaurant_outlined),
+            selectedIcon: Icon(
+              Icons.table_restaurant_rounded,
+              color: AppColors.secondaryOrange,
+            ),
+            label: 'Reservasi',
           ),
           NavigationDestination(
             key: ValueKey('nav_profile'),
             icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded, color: AppColors.secondaryOrange),
+            selectedIcon: Icon(
+              Icons.person_rounded,
+              color: AppColors.secondaryOrange,
+            ),
             label: 'Profil',
           ),
         ],
@@ -107,9 +130,11 @@ class _ExpressBeranda extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstName = user?.name.split(' ').first ?? 'KOMMUNITY';
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -128,26 +153,33 @@ class _ExpressBeranda extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 SafeArea(
                   bottom: false,
                   child: Column(
                     children: [
                       // Header Row
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.restaurant_rounded, color: Colors.white, size: 24),
+                                Icon(
+                                  Icons.restaurant_rounded,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Komars Express',
                                   style: TextStyle(
-                                    fontFamily: 'Outfit', 
-                                    fontWeight: FontWeight.w900, 
+                                    fontFamily: 'Outfit',
+                                    fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     fontSize: 18,
                                   ),
@@ -155,41 +187,59 @@ class _ExpressBeranda extends StatelessWidget {
                               ],
                             ),
                             GestureDetector(
-                              onTap: () => Navigator.pushNamed(context, AppRoutes.cart),
+                              onTap: () =>
+                                  Navigator.pushNamed(context, AppRoutes.cart),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.shopping_cart_outlined, color: Colors.black87, size: 16),
+                                    Icon(
+                                      Icons.shopping_cart_outlined,
+                                      color: Colors.black87,
+                                      size: 16,
+                                    ),
                                     SizedBox(width: 6),
-                                    Text('Keranjang', style: TextStyle(fontWeight: FontWeight.w800, color: Colors.black87, fontSize: 12)),
+                                    Text(
+                                      'Keranjang',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.black87,
+                                        fontSize: 12,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 10),
-                      
+
                       // Carousel
                       const _PromoCarousel(),
                     ],
                   ),
                 ),
-                
+
                 // Greeting Overlapping Card
                 Positioned(
                   bottom: -35,
                   left: 20,
                   right: 20,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.darkCard : Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -214,25 +264,36 @@ class _ExpressBeranda extends StatelessWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.menuList),
+                          onTap: () =>
+                              Navigator.pushNamed(context, AppRoutes.menuList),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.secondaryOrange,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Text('Cari Menu', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                            child: const Text(
+                              'Cari Menu',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 60),
-            
+
             // ── Categories Header ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -246,9 +307,9 @@ class _ExpressBeranda extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // ── Circle Categories (4 items) ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -258,34 +319,48 @@ class _ExpressBeranda extends StatelessWidget {
                   _CircleCategory(
                     icon: Icons.rice_bowl_rounded,
                     title: 'Makanan',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.menuList, arguments: 'food'),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.menuList,
+                      arguments: 'food',
+                    ),
                   ),
                   _CircleCategory(
                     icon: Icons.local_drink_rounded,
                     title: 'Minuman',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.menuList, arguments: 'drink'),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.menuList,
+                      arguments: 'drink',
+                    ),
                   ),
                   _CircleCategory(
                     icon: Icons.emoji_food_beverage_rounded,
                     title: 'Beverage',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.menuList, arguments: 'beverage'),
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      AppRoutes.menuList,
+                      arguments: 'beverage',
+                    ),
                   ),
                   _CircleCategory(
                     icon: Icons.local_offer_rounded,
                     title: 'Promo',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.menuList),
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.menuList),
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 35),
-            
+
             // ── Bottom Banner ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: GestureDetector(
-                onTap: () => Navigator.pushNamed(context, AppRoutes.reservation),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.reservation),
                 child: Container(
                   width: double.infinity,
                   height: 140,
@@ -347,13 +422,18 @@ class _ExpressBeranda extends StatelessWidget {
                                     style: TextStyle(
                                       fontFamily: 'Outfit',
                                       fontSize: 11,
-                                      color: Colors.white.withValues(alpha: 0.8),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.secondaryOrange,
                                   borderRadius: BorderRadius.circular(20),
@@ -376,7 +456,7 @@ class _ExpressBeranda extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 40),
           ],
         ),
@@ -392,7 +472,11 @@ class _CircleCategory extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _CircleCategory({required this.icon, required this.title, required this.onTap});
+  const _CircleCategory({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -548,7 +632,9 @@ class _PromoCarouselState extends State<_PromoCarousel> {
                                       style: TextStyle(
                                         fontFamily: 'Outfit',
                                         fontSize: 12,
-                                        color: Colors.white.withValues(alpha: 0.8),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.8,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -588,18 +674,20 @@ class _PromoCarouselState extends State<_PromoCarousel> {
     );
   }
 }
+
 class _QuickTile extends StatelessWidget {
   final String id;
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _QuickTile(
-      {required this.id,
-      required this.icon,
-      required this.label,
-      required this.color,
-      required this.onTap});
+  const _QuickTile({
+    required this.id,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

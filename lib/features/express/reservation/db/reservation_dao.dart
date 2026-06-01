@@ -12,13 +12,17 @@ class ReservationDao {
   /// Get all reservations for a user, joined with table info, newest first.
   Future<List<ReservationModel>> getByUser(int userId) async {
     final db = await _db.database;
-    final maps = await db.rawQuery('''
-      SELECT r.*, t.table_number, t.location
+    final maps = await db.rawQuery(
+      '''
+      SELECT r.*, t.table_number, t.location, u.name as user_name
       FROM reservations r
       LEFT JOIN tables t ON r.table_id = t.id
+      LEFT JOIN users u ON r.user_id = u.id
       WHERE r.user_id = ?
       ORDER BY r.reservation_date DESC, r.start_time DESC
-    ''', [userId]);
+    ''',
+      [userId],
+    );
     return List.generate(maps.length, (i) => ReservationModel.fromMap(maps[i]));
   }
 
@@ -26,17 +30,20 @@ class ReservationDao {
   Future<List<ReservationModel>> getAll() async {
     final db = await _db.database;
     final maps = await db.rawQuery('''
-      SELECT r.*, t.table_number, t.location
+      SELECT r.*, t.table_number, t.location, u.name as user_name
       FROM reservations r
       LEFT JOIN tables t ON r.table_id = t.id
+      LEFT JOIN users u ON r.user_id = u.id
       ORDER BY r.reservation_date DESC, r.start_time DESC
     ''');
     return List.generate(maps.length, (i) => ReservationModel.fromMap(maps[i]));
   }
 
-
   /// Get reservations booked for a specific table on a specific date (for conflict check).
-  Future<List<ReservationModel>> getByTableAndDate(int tableId, String date) async {
+  Future<List<ReservationModel>> getByTableAndDate(
+    int tableId,
+    String date,
+  ) async {
     final db = await _db.database;
     final maps = await db.query(
       'reservations',
@@ -49,24 +56,31 @@ class ReservationDao {
   /// Get all reservations on a specific date (used for real-time occupancy map).
   Future<List<ReservationModel>> getByDate(String date) async {
     final db = await _db.database;
-    final maps = await db.rawQuery('''
+    final maps = await db.rawQuery(
+      '''
       SELECT r.*, t.table_number, t.location
       FROM reservations r
       LEFT JOIN tables t ON r.table_id = t.id
       WHERE r.reservation_date = ? AND r.status != 'Dibatalkan'
-    ''', [date]);
+    ''',
+      [date],
+    );
     return List.generate(maps.length, (i) => ReservationModel.fromMap(maps[i]));
   }
 
   Future<ReservationModel?> getById(int id) async {
     final db = await _db.database;
-    final maps = await db.rawQuery('''
-      SELECT r.*, t.table_number, t.location
+    final maps = await db.rawQuery(
+      '''
+      SELECT r.*, t.table_number, t.location, u.name as user_name
       FROM reservations r
       LEFT JOIN tables t ON r.table_id = t.id
+      LEFT JOIN users u ON r.user_id = u.id
       WHERE r.id = ?
       LIMIT 1
-    ''', [id]);
+    ''',
+      [id],
+    );
     if (maps.isEmpty) return null;
     return ReservationModel.fromMap(maps.first);
   }

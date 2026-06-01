@@ -64,34 +64,55 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.account_balance_wallet_rounded,
-                size: 72, color: AppColors.primaryGreen.withValues(alpha: 0.4)),
+            Icon(
+              Icons.account_balance_wallet_rounded,
+              size: 72,
+              color: AppColors.primaryGreen.withValues(alpha: 0.4),
+            ),
             const SizedBox(height: 16),
-            const Text('Pencatatan Keuangan',
-                style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700)),
+            const Text(
+              'Pencatatan Keuangan',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('Fitur keuangan mitra tani',
-                style: TextStyle(
-                    fontFamily: 'Outfit', fontSize: 14, color: Colors.grey[600])),
+            Text(
+              'Fitur keuangan mitra tani',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14)),
+                backgroundColor: AppColors.primaryGreen,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
+              ),
               onPressed: () => Navigator.pushNamed(
-                  context, AppRoutes.farmFinanceHistory,
-                  arguments: _user?.id ?? 1),
+                context,
+                AppRoutes.farmFinanceHistory,
+                arguments: _user?.id ?? 1,
+              ),
               icon: const Icon(Icons.history_rounded),
-              label: const Text('Riwayat Keuangan',
-                  style: TextStyle(
-                      fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
+              label: const Text(
+                'Riwayat Keuangan',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),
@@ -107,38 +128,45 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
         height: 64,
         selectedIndex: _tabIndex,
         onDestinationSelected: (i) => setState(() => _tabIndex = i),
-        backgroundColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSurface
-                : Colors.white,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : Colors.white,
         indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.15),
         destinations: const [
           NavigationDestination(
             key: ValueKey('farm_nav_home'),
             icon: Icon(Icons.home_outlined),
-            selectedIcon:
-                Icon(Icons.home_rounded, color: AppColors.primaryGreen),
+            selectedIcon: Icon(
+              Icons.home_rounded,
+              color: AppColors.primaryGreen,
+            ),
             label: 'Beranda',
           ),
           NavigationDestination(
             key: ValueKey('farm_nav_finance'),
             icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet_rounded,
-                color: AppColors.primaryGreen),
+            selectedIcon: Icon(
+              Icons.account_balance_wallet_rounded,
+              color: AppColors.primaryGreen,
+            ),
             label: 'Keuangan',
           ),
           NavigationDestination(
             key: ValueKey('farm_nav_sell'),
             icon: Icon(Icons.sell_outlined),
-            selectedIcon: Icon(Icons.sell_rounded,
-                color: AppColors.primaryGreen),
+            selectedIcon: Icon(
+              Icons.sell_rounded,
+              color: AppColors.primaryGreen,
+            ),
             label: 'Jual Panen',
           ),
           NavigationDestination(
             key: ValueKey('farm_nav_profile'),
             icon: Icon(Icons.person_outline_rounded),
-            selectedIcon:
-                Icon(Icons.person_rounded, color: AppColors.primaryGreen),
+            selectedIcon: Icon(
+              Icons.person_rounded,
+              color: AppColors.primaryGreen,
+            ),
             label: 'Profil',
           ),
         ],
@@ -159,7 +187,7 @@ class _FarmBeranda extends StatefulWidget {
 
 class _FarmBerandaState extends State<_FarmBeranda> {
   late DatabaseHelper _dbHelper;
-  String _selectedFarmType = 'ayam';
+  String _selectedFarmType = 'unggas';
   List<FarmPackage> _packages = [];
   bool _isLoading = true;
 
@@ -172,16 +200,21 @@ class _FarmBerandaState extends State<_FarmBeranda> {
   Future<void> _initData() async {
     _dbHelper = DatabaseHelper.instance;
     final prefs = await SharedPreferences.getInstance();
-    _selectedFarmType = prefs.getString(PrefKeys.selectedFarmType) ?? 'ayam';
+    _selectedFarmType = prefs.getString(PrefKeys.selectedFarmType) ?? 'unggas';
     await _loadPackages();
   }
 
   Future<void> _loadPackages() async {
     setState(() => _isLoading = true);
     try {
-      final packages = await _dbHelper.farmPackageDao
-          .getPackagesByFarmType(_selectedFarmType);
-      if (mounted) setState(() { _packages = packages; _isLoading = false; });
+      final packages = await _dbHelper.farmPackageDao.getPackagesByFarmType(
+        _selectedFarmType,
+      );
+      if (mounted)
+        setState(() {
+          _packages = packages;
+          _isLoading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -209,13 +242,20 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.agriculture_rounded,
-                  color: Colors.white, size: 18),
+              child: const Icon(
+                Icons.agriculture_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 8),
-            const Text('Komars Farm',
-                style: TextStyle(
-                    fontFamily: 'Outfit', fontWeight: FontWeight.w800)),
+            const Text(
+              'Komars Farm',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),
@@ -257,8 +297,10 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                         // Quick finance access
                         GestureDetector(
                           onTap: () => Navigator.pushNamed(
-                              context, AppRoutes.farmFinanceHistory,
-                              arguments: widget.user?.id ?? 1),
+                            context,
+                            AppRoutes.farmFinanceHistory,
+                            arguments: widget.user?.id ?? 1,
+                          ),
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
@@ -268,8 +310,9 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                             child: Row(
                               children: [
                                 const Icon(
-                                    Icons.account_balance_wallet_rounded,
-                                    color: Colors.white),
+                                  Icons.account_balance_wallet_rounded,
+                                  color: Colors.white,
+                                ),
                                 const SizedBox(width: 10),
                                 const Expanded(
                                   child: Text(
@@ -282,8 +325,11 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                                     ),
                                   ),
                                 ),
-                                const Icon(Icons.arrow_forward_ios_rounded,
-                                    color: Colors.white, size: 14),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
                               ],
                             ),
                           ),
@@ -299,51 +345,53 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // ── Filter Tipe Tani ────────────────────────────────
-                        Text('Kategori Usaha Tani',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700)),
+                        Text(
+                          'Kategori Usaha Tani',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                         const SizedBox(height: 12),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              _farmTypeItem('ayam', '🐔', 'Ayam'),
+                              _farmTypeItem('unggas', '🐔', 'Unggas'),
                               const SizedBox(width: 8),
-                              _farmTypeItem('lele', '🐟', 'Lele'),
+                              _farmTypeItem('ikan', '🐟', 'Ikan'),
                               const SizedBox(width: 8),
-                              _farmTypeItem('hidroponik', '🌿', 'Hidroponik'),
-                              const SizedBox(width: 8),
-                              _farmTypeItem('sayuran', '🥬', 'Sayuran'),
+                              _farmTypeItem('sayur', '🥬', 'Sayur'),
                             ],
                           ),
                         ),
                         const SizedBox(height: 24),
 
                         // ── Package List ─────────────────────────────────────
-                        Text('Paket Starter Kit',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700)),
+                        Text(
+                          'Paket Starter Kit',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                         const SizedBox(height: 12),
                         if (_packages.isEmpty)
                           Center(
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 32),
+                              padding: const EdgeInsets.symmetric(vertical: 32),
                               child: Column(
                                 children: [
-                                  Icon(Icons.inbox_outlined,
-                                      size: 56,
-                                      color: Colors.grey.shade400),
+                                  Icon(
+                                    Icons.inbox_outlined,
+                                    size: 56,
+                                    color: Colors.grey.shade400,
+                                  ),
                                   const SizedBox(height: 12),
-                                  Text('Belum ada paket tersedia',
-                                      style: TextStyle(
-                                          fontFamily: 'Outfit',
-                                          fontSize: 14,
-                                          color: Colors.grey.shade600)),
+                                  Text(
+                                    'Belum ada paket tersedia',
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -450,19 +498,25 @@ class _PackageCard extends StatelessWidget {
                 color: AppColors.primaryGreenSurface,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.agriculture_rounded,
-                  color: AppColors.primaryGreen, size: 30),
+              child: const Icon(
+                Icons.agriculture_rounded,
+                color: AppColors.primaryGreen,
+                size: 30,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(package.title,
-                      style: const TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700)),
+                  Text(
+                    package.title,
+                    style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     'ROI: ${package.roiMonths} bulan · Panen: ${package.harvestTimeDays} hari',
@@ -479,7 +533,9 @@ class _PackageCard extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryGreenSurface,
                           borderRadius: BorderRadius.circular(8),
@@ -499,8 +555,11 @@ class _PackageCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 14, color: Colors.grey),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Colors.grey,
+            ),
           ],
         ),
       ),

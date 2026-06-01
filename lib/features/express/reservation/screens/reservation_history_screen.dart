@@ -12,7 +12,8 @@ class ReservationHistoryScreen extends StatefulWidget {
   const ReservationHistoryScreen({super.key, this.embedded = false});
 
   @override
-  State<ReservationHistoryScreen> createState() => _ReservationHistoryScreenState();
+  State<ReservationHistoryScreen> createState() =>
+      _ReservationHistoryScreenState();
 }
 
 class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
@@ -32,7 +33,11 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
   Future<void> _load() async {
     setState(() => _isLoading = true);
     final list = await _dao.getByUser(_userId);
-    if (mounted) setState(() { _reservations = list; _isLoading = false; });
+    if (mounted)
+      setState(() {
+        _reservations = list;
+        _isLoading = false;
+      });
   }
 
   Future<void> _cancel(ReservationModel r) async {
@@ -41,10 +46,14 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
     final now = DateTime.now();
     final bookingDt = DateTime.parse('${r.reservationDate}T${r.startTime}:00');
     if (bookingDt.difference(now).inHours < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Pembatalan hanya dapat dilakukan minimal 3 jam sebelum reservasi.'),
-        backgroundColor: AppColors.statusCancelled,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Pembatalan hanya dapat dilakukan minimal 3 jam sebelum reservasi.',
+          ),
+          backgroundColor: AppColors.statusCancelled,
+        ),
+      );
       return;
     }
     final confirm = await showDialog<bool>(
@@ -52,13 +61,18 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Batalkan Reservasi?'),
         content: Text(
-            'Batalkan reservasi meja ${r.tableNumber ?? r.tableId} pada ${r.reservationDate}?'),
+          'Batalkan reservasi meja ${r.tableNumber ?? r.tableId} pada ${r.reservationDate}?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Kembali', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Kembali', style: TextStyle(color: Colors.grey)),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.deleteRed, foregroundColor: Colors.white),
+              backgroundColor: AppColors.deleteRed,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Batalkan'),
           ),
@@ -75,117 +89,149 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       appBar: AppBar(
-          automaticallyImplyLeading: !widget.embedded,
-          title: const Text(
-            'Riwayat Reservasi',
-            style: TextStyle(
-              fontFamily: 'Outfit',
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+        automaticallyImplyLeading: !widget.embedded,
+        title: const Text(
+          'Riwayat Reservasi',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
           ),
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.darkSurface
-              : AppColors.secondaryOrange,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: _load,
-              tooltip: 'Refresh',
-            ),
-          ],
         ),
-      // FAB home hanya tampil saat standalone (bukan embedded di dashboard)
-      floatingActionButton: widget.embedded
-          ? null
-          : FloatingActionButton(
-              onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                  context, AppRoutes.home, (route) => false),
-              backgroundColor: AppColors.secondaryOrange,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              tooltip: 'Kembali ke Beranda',
-              child: const Icon(Icons.home_rounded, size: 28),
-            ),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _load,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
+      // FAB ditambahkan agar user bisa buat reservasi dari list riwayat
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (widget.embedded) {
+            // Jika di tab home, navigasi ke form reservasi
+            await Navigator.pushNamed(context, AppRoutes.reservation);
+            _load();
+          } else {
+            // Perilaku lama untuk standalone
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              AppRoutes.home,
+              (route) => false,
+            );
+          }
+        },
+        backgroundColor: AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        tooltip: widget.embedded ? 'Buat Reservasi' : 'Kembali ke Beranda',
+        child: Icon(
+          widget.embedded ? Icons.add_rounded : Icons.home_rounded,
+          size: 28,
+        ),
+      ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.secondaryOrange))
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.secondaryOrange,
+              ),
+            )
           : _reservations.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.table_restaurant_rounded,
-                          size: 80, color: Colors.grey[350]),
-                      const SizedBox(height: 20),
-                      Text(
-                        widget.embedded ? 'Tidak Ada Reservasi' : 'Belum ada reservasi',
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.table_restaurant_rounded,
+                    size: 80,
+                    color: Colors.grey[350],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    widget.embedded
+                        ? 'Tidak Ada Reservasi'
+                        : 'Belum ada reservasi',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.embedded
+                        ? 'Saat ini belum ada data reservasi masuk.'
+                        : 'Buat reservasi pertama Anda sekarang!',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 13,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  if (!widget.embedded) ...[
+                    const SizedBox(height: 28),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        await Navigator.pushNamed(
+                          context,
+                          AppRoutes.reservation,
+                        );
+                        _load();
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text(
+                        'Buat Reservasi',
                         style: TextStyle(
                           fontFamily: 'Outfit',
-                          fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Colors.grey[600],
+                          fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.embedded
-                            ? 'Saat ini belum ada data reservasi masuk.'
-                            : 'Buat reservasi pertama Anda sekarang!',
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 13,
-                          color: Colors.grey[400],
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondaryOrange,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 13,
+                        ),
+                        elevation: 0,
                       ),
-                      if (!widget.embedded) ...[
-                        const SizedBox(height: 28),
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            await Navigator.pushNamed(
-                                context, AppRoutes.reservation);
-                            _load();
-                          },
-                          icon: const Icon(Icons.add_rounded, size: 18),
-                          label: const Text(
-                            'Buat Reservasi',
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondaryOrange,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 13),
-                            elevation: 0,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                  itemCount: _reservations.length,
-                  itemBuilder: (ctx, i) => _ReservationCard(
-                    reservation: _reservations[i],
-                    isDark: isDark,
-                    onTap: () async {
-                      await Navigator.pushNamed(ctx, AppRoutes.reservationDetail,
-                          arguments: _reservations[i]);
-                      _load();
-                    },
-                    onCancel: () => _cancel(_reservations[i]),
-                  ),
-                ),
+                    ),
+                  ],
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+              itemCount: _reservations.length,
+              itemBuilder: (ctx, i) => _ReservationCard(
+                reservation: _reservations[i],
+                isDark: isDark,
+                onTap: () async {
+                  await Navigator.pushNamed(
+                    ctx,
+                    AppRoutes.reservationDetail,
+                    arguments: _reservations[i],
+                  );
+                  _load();
+                },
+                onCancel: () => _cancel(_reservations[i]),
+              ),
+            ),
     );
   }
 }
@@ -204,70 +250,138 @@ class _ReservationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canCancel = reservation.status == 'Aktif' || reservation.status == 'Berlangsung';
+    final canCancel =
+        reservation.status == 'Aktif' || reservation.status == 'Berlangsung';
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
-        boxShadow: [if (!isDark)
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 3))],
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+        ],
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                      color: AppColors.secondaryOrange.withValues(alpha: 0.12),
-                      shape: BoxShape.circle),
-                  child: const Icon(Icons.table_restaurant_rounded,
-                      color: AppColors.secondaryOrange, size: 18),
-                ),
-                const SizedBox(width: 10),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(
-                    'Meja ${reservation.tableNumber ?? reservation.tableId}',
-                    style: const TextStyle(fontFamily: 'Outfit', fontSize: 15, fontWeight: FontWeight.w700),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondaryOrange.withValues(
+                            alpha: 0.12,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.table_restaurant_rounded,
+                          color: AppColors.secondaryOrange,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (widget.embedded && reservation.userName != null)
+                            Text(
+                              reservation.userName!,
+                              style: const TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.secondaryOrange,
+                              ),
+                            ),
+                          Text(
+                            'Meja ${reservation.tableNumber ?? reservation.tableId}',
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            reservation.tableLocation ?? '',
+                            style: const TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(reservation.tableLocation ?? '',
-                      style: const TextStyle(fontFamily: 'Outfit', fontSize: 11, color: Colors.grey)),
-                ]),
-              ]),
-              StatusBadge(status: reservation.status),
-            ]),
-            const Divider(height: 20),
-            Row(children: [
-              const Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey),
-              const SizedBox(width: 6),
-              Text(reservation.reservationDate,
-                  style: const TextStyle(fontFamily: 'Outfit', fontSize: 13)),
-              const SizedBox(width: 16),
-              const Icon(Icons.schedule_rounded, size: 14, color: Colors.grey),
-              const SizedBox(width: 6),
-              Text('${reservation.startTime} – ${reservation.endTime}',
-                  style: const TextStyle(fontFamily: 'Outfit', fontSize: 13)),
-            ]),
-            if (canCancel) ...[
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(foregroundColor: AppColors.deleteRed),
-                  onPressed: onCancel,
-                  icon: const Icon(Icons.cancel_outlined, size: 14),
-                  label: const Text('Batalkan',
-                      style: TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700)),
-                ),
+                  StatusBadge(status: reservation.status),
+                ],
               ),
+              const Divider(height: 20),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    reservation.reservationDate,
+                    style: const TextStyle(fontFamily: 'Outfit', fontSize: 13),
+                  ),
+                  const SizedBox(width: 16),
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${reservation.startTime} – ${reservation.endTime}',
+                    style: const TextStyle(fontFamily: 'Outfit', fontSize: 13),
+                  ),
+                ],
+              ),
+              if (canCancel) ...[
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.deleteRed,
+                    ),
+                    onPressed: onCancel,
+                    icon: const Icon(Icons.cancel_outlined, size: 14),
+                    label: const Text(
+                      'Batalkan',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ]),
+          ),
         ),
       ),
     );

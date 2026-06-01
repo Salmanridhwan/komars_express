@@ -22,7 +22,7 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
   late DatabaseHelper _dbHelper;
   late SharedPreferences _prefs;
 
-  String _selectedFarmType = 'ayam';
+  String _selectedFarmType = 'unggas';
   String _filterPeriod = 'weekly';
   List<FinancialRecord> _records = [];
   bool _isLoading = true;
@@ -41,7 +41,7 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
   Future<void> _initializeData() async {
     _dbHelper = DatabaseHelper.instance;
     _prefs = await SharedPreferences.getInstance();
-    _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'ayam';
+    _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'unggas';
     _filterPeriod = _prefs.getString(PrefKeys.financeFilterPeriod) ?? 'weekly';
     await _loadRecords();
   }
@@ -160,13 +160,16 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                             ),
                             const SizedBox(height: 4),
                             DropdownButton<String>(
-                              value: _selectedFarmType,
+                              value: _selectedFarmType.toLowerCase(),
                               isExpanded: true,
-                              items: ['ayam', 'lele', 'hidroponik', 'sayuran']
+                              items: ['unggas', 'ikan', 'sayur']
                                   .map(
                                     (type) => DropdownMenuItem(
                                       value: type,
-                                      child: Text(type),
+                                      child: Text(
+                                        type[0].toUpperCase() +
+                                            type.substring(1),
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -361,4 +364,3 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
     );
   }
 }
-

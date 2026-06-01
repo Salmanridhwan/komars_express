@@ -12,6 +12,7 @@ class ReservationModel {
   // Joined fields (not stored in DB)
   final String? tableNumber;
   final String? tableLocation;
+  final String? userName;
 
   const ReservationModel({
     this.id,
@@ -25,20 +26,22 @@ class ReservationModel {
     this.createdAt,
     this.tableNumber,
     this.tableLocation,
+    this.userName,
   });
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'user_id': userId,
-        'table_id': tableId,
-        'reservation_date': reservationDate,
-        'start_time': startTime,
-        'end_time': endTime,
-        'status': status,
-        'notes': notes,
-      };
+    if (id != null) 'id': id,
+    'user_id': userId,
+    'table_id': tableId,
+    'reservation_date': reservationDate,
+    'start_time': startTime,
+    'end_time': endTime,
+    'status': status,
+    'notes': notes,
+  };
 
-  factory ReservationModel.fromMap(Map<String, dynamic> map) => ReservationModel(
+  factory ReservationModel.fromMap(Map<String, dynamic> map) =>
+      ReservationModel(
         id: map['id'] as int?,
         userId: map['user_id'] as int,
         tableId: map['table_id'] as int,
@@ -64,18 +67,17 @@ class ReservationModel {
     String? createdAt,
     String? tableNumber,
     String? tableLocation,
-  }) =>
-      ReservationModel(
-        id: id ?? this.id,
-        userId: userId ?? this.userId,
-        tableId: tableId ?? this.tableId,
-        reservationDate: reservationDate ?? this.reservationDate,
-        startTime: startTime ?? this.startTime,
-        endTime: endTime ?? this.endTime,
-        status: status ?? this.status,
-        notes: notes ?? this.notes,
-        createdAt: createdAt ?? this.createdAt,
-        tableNumber: tableNumber ?? this.tableNumber,
-        tableLocation: tableLocation ?? this.tableLocation,
-      );
+  }) => ReservationModel(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    tableId: tableId ?? this.tableId,
+    reservationDate: reservationDate ?? this.reservationDate,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    status: status ?? this.status,
+    notes: notes ?? this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    tableNumber: tableNumber ?? this.tableNumber,
+    tableLocation: tableLocation ?? this.tableLocation,
+  );
 }

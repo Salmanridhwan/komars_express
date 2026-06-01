@@ -222,7 +222,7 @@ class SeedData {
   static Future<void> _seedFarmPackages(db) async {
     final packages = [
       {
-        'farm_type': 'ayam',
+        'farm_type': 'unggas',
         'title': 'Starter Kit Ayam Kampung',
         'description':
             'Paket lengkap memulai usaha ternak ayam kampung organik dengan modal terjangkau.',
@@ -237,7 +237,7 @@ class SeedData {
             '["Kandang kawat","Tempat pakan otomatis","Tempat minum nipple","Lampu pemanas","Timbangan digital"]',
       },
       {
-        'farm_type': 'lele',
+        'farm_type': 'ikan',
         'title': 'Starter Kit Budidaya Lele',
         'description':
             'Paket usaha budidaya lele dengan kolam terpal, cocok untuk lahan terbatas.',
@@ -252,7 +252,7 @@ class SeedData {
             '["Kolam terpal","Pompa aerator","Jaring panen","Ember besar","Timbangan"]',
       },
       {
-        'farm_type': 'hidroponik',
+        'farm_type': 'sayur',
         'title': 'Starter Kit Hidroponik NFT',
         'description':
             'Paket bertani sayuran segar dengan sistem hidroponik NFT untuk rumahan atau bisnis kecil.',

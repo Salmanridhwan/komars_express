@@ -23,7 +23,7 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
   final _lossController = TextEditingController();
   final _notesController = TextEditingController();
 
-  String _selectedFarmType = 'ayam';
+  String _selectedFarmType = 'unggas';
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -35,7 +35,7 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
   Future<void> _initializeData() async {
     _dbHelper = DatabaseHelper.instance;
     _prefs = await SharedPreferences.getInstance();
-    _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'ayam';
+    _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'unggas';
     setState(() {});
   }
 
@@ -126,11 +126,14 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButton<String>(
-              value: _selectedFarmType,
+              value: _selectedFarmType.toLowerCase(),
               isExpanded: true,
-              items: ['ayam', 'lele', 'hidroponik', 'sayuran']
+              items: ['unggas', 'ikan', 'sayur']
                   .map(
-                    (type) => DropdownMenuItem(value: type, child: Text(type)),
+                    (type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type[0].toUpperCase() + type.substring(1)),
+                    ),
                   )
                   .toList(),
               onChanged: (value) {
@@ -274,4 +277,3 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
     );
   }
 }
-
