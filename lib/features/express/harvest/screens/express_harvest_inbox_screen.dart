@@ -56,35 +56,39 @@ class _ExpressHarvestInboxScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Panen Masuk'),
-              backgroundColor: AppColors.secondaryOrange,
-              foregroundColor: Colors.white,
-            ),
+      appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
+        title: const Text(
+          'Inbox Hasil Panen',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _load,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // ── Header Stats ───────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             decoration: const BoxDecoration(
               gradient: AppColors.expressGradient,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Inbox Hasil Panen',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Text(
                   'Panen dari mitra petani KomarFarm',
                   style: TextStyle(
@@ -318,11 +322,11 @@ class _HarvestCard extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreenSurface,
+                        color: AppColors.secondaryOrangeSurface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.person_rounded,
-                          color: AppColors.primaryGreen, size: 20),
+                          color: AppColors.secondaryOrange, size: 20),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -426,7 +430,7 @@ class _HarvestCard extends StatelessWidget {
                               fontFamily: 'Outfit',
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.primaryGreen),
+                              color: AppColors.secondaryOrange),
                         ),
                       ],
                     ),
@@ -507,7 +511,7 @@ class _HarvestCard extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () => _updateStatus(context, 'Diterima'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.statusSuccess,
+                        backgroundColor: AppColors.secondaryOrange,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),

@@ -164,33 +164,33 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     );
   }
 
-  Widget _buildEmbeddedHeader(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
-      child: Row(
-        children: [
-          const Text(
-            'Daftar Menu',
-            style: TextStyle(
-              fontFamily: 'Outfit',
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Spacer(),
-          if (_menuItems.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete_sweep_rounded, color: Colors.red),
-              onPressed: _deleteAllMenus,
-              tooltip: 'Hapus Semua',
-            ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: _loadAllMenus,
-            tooltip: 'Refresh',
-          ),
-        ],
+  PreferredSizeWidget _buildAppBar(bool isDark) {
+    return AppBar(
+      automaticallyImplyLeading: !widget.embedded,
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      title: const Text(
+        'Kelola Menu',
+        style: TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
       ),
+      actions: [
+        if (_menuItems.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_rounded),
+            onPressed: _deleteAllMenus,
+            tooltip: 'Hapus Semua Menu',
+          ),
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded),
+          onPressed: _loadAllMenus,
+          tooltip: 'Refresh',
+        ),
+      ],
     );
   }
 
@@ -199,29 +199,9 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Kelola Menu'),
-              actions: [
-                if (_menuItems.isNotEmpty)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_sweep_rounded,
-                      color: Colors.red,
-                    ),
-                    onPressed: _deleteAllMenus,
-                    tooltip: 'Hapus Semua Menu',
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _loadAllMenus,
-                ),
-              ],
-            ),
+      appBar: _buildAppBar(isDark),
       body: Column(
         children: [
-          if (widget.embedded) _buildEmbeddedHeader(isDark),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -243,8 +223,10 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryGreen,
+                            backgroundColor: AppColors.secondaryOrange,
                             foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 12,
@@ -252,7 +234,8 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                           ),
                           onPressed: () => _openFormModal(),
                           icon: const Icon(Icons.add_rounded),
-                          label: const Text('Tambah Menu Pertama'),
+                          label: const Text('Tambah Menu Pertama',
+                              style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700)),
                         ),
                       ],
                     ),
@@ -398,10 +381,10 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                                       style: TextStyle(
                                         fontFamily: 'Outfit',
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w700,
                                         color: isDark
-                                            ? AppColors.primaryGreenLight
-                                            : AppColors.primaryGreen,
+                                            ? AppColors.secondaryOrangeLight
+                                            : AppColors.secondaryOrange,
                                       ),
                                     ),
                                     const SizedBox(height: 6),
@@ -460,15 +443,13 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
-                                        color: Colors.blue.withValues(
-                                          alpha: 0.1,
-                                        ),
+                                        color: AppColors.secondaryOrange.withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(
                                         Icons.edit_outlined,
                                         size: 16,
-                                        color: Colors.blue,
+                                        color: AppColors.secondaryOrange,
                                       ),
                                     ),
                                   ),
@@ -479,15 +460,13 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.withValues(
-                                          alpha: 0.1,
-                                        ),
+                                        color: AppColors.deleteRed.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(
                                         Icons.delete_outline_rounded,
                                         size: 16,
-                                        color: Colors.red,
+                                        color: AppColors.deleteRed,
                                       ),
                                     ),
                                   ),
@@ -504,6 +483,8 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openFormModal(),
+        backgroundColor: AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add_rounded),
       ),
     );
@@ -841,6 +822,8 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                           label: Text(
                             cat,
                             style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontWeight: FontWeight.w600,
                               color:
                                   _categoryController.text == cat &&
                                       !_isAddingNewCategory
@@ -848,7 +831,7 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                                   : null,
                             ),
                           ),
-                          selectedColor: AppColors.primaryGreen,
+                          selectedColor: AppColors.secondaryOrange,
                           selected:
                               _categoryController.text == cat &&
                               !_isAddingNewCategory,
@@ -865,12 +848,13 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                         label: const Text(
                           '+ Baru',
                           style: TextStyle(
-                            color: AppColors.primaryGreen,
+                            fontFamily: 'Outfit',
+                            color: AppColors.secondaryOrange,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         selected: _isAddingNewCategory,
-                        selectedColor: AppColors.primaryGreenLight,
+                        selectedColor: AppColors.secondaryOrangeLight,
                         onSelected: (selected) {
                           if (selected) {
                             setState(() {
@@ -878,8 +862,7 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                               if (_existingCategories.contains(
                                 _categoryController.text,
                               )) {
-                                _categoryController.text =
-                                    ''; // Clear if they switch from an existing category
+                                _categoryController.text = '';
                               }
                             });
                           }
@@ -930,7 +913,7 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                   'Aktifkan jika menu siap dipesan oleh pelanggan',
                 ),
                 value: _isAvailable,
-                activeColor: AppColors.primaryGreen,
+                activeColor: AppColors.secondaryOrange,
                 onChanged: (val) => setState(() => _isAvailable = val),
               ),
               const SizedBox(height: 24),
@@ -940,9 +923,12 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
+                    backgroundColor: AppColors.secondaryOrange,
                     foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
                   ),
                   onPressed: _submit,
                   child: Text(
@@ -952,6 +938,7 @@ class _MenuFormBottomSheetState extends State<_MenuFormBottomSheet> {
                     style: const TextStyle(
                       fontFamily: 'Outfit',
                       fontWeight: FontWeight.w700,
+                      fontSize: 15,
                     ),
                   ),
                 ),

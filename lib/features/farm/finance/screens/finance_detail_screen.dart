@@ -178,7 +178,7 @@ class _FinanceDetailScreenState extends State<FinanceDetailScreen> {
                                       horizontal: 12,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
+                                      color: Colors.white.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
                                         color: Colors.white,
@@ -422,7 +422,7 @@ class _DetailCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color, width: isHighlight ? 2 : 1),
       ),

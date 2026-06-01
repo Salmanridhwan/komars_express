@@ -77,7 +77,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: !widget.embedded,
-        title: const Text('Riwayat Transaksi'),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkSurface
+            : AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Riwayat Pesanan',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -103,13 +115,13 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           child: const Icon(
                             Icons.receipt_long_rounded,
                             size: 80,
-                            color: AppColors.primaryGreen,
+                            color: AppColors.secondaryOrange,
                           ),
                         ),
                         const SizedBox(height: 24),
-                        const Text(
-                          'Belum Ada Pesanan',
-                          style: TextStyle(
+                        Text(
+                          widget.embedded ? 'Tidak Ada Pesanan' : 'Belum Ada Pesanan',
+                          style: const TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
@@ -117,7 +129,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Kelihatannya Anda belum memesan apapun. Yuk, jelajahi menu lezat kami dan mulai pesanan pertama Anda!',
+                          widget.embedded
+                              ? 'Saat ini belum ada data pesanan yang masuk ke sistem.'
+                              : 'Kelihatannya Anda belum memesan apapun. Yuk, jelajahi menu lezat kami dan mulai pesanan pertama Anda!',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'Outfit',
@@ -126,22 +140,18 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                             height: 1.5,
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (widget.embedded) {
-                                // If embedded in navbar, it's a bit tricky to change the navbar index from here without a global state,
-                                // but we can push the menu list route instead.
+                        if (!widget.embedded) ...[
+                          const SizedBox(height: 32),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
                                 Navigator.pushNamed(context, AppRoutes.menuList);
-                              } else {
-                                Navigator.pushNamed(context, AppRoutes.menuList);
-                              }
-                            },
-                            child: const Text('Mulai Pesan Sekarang'),
+                              },
+                              child: const Text('Mulai Pesan Sekarang'),
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -198,7 +208,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                       color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: const Icon(Icons.receipt_long_rounded, color: AppColors.primaryGreen),
+                                    child: const Icon(Icons.receipt_long_rounded, color: AppColors.secondaryOrange),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -259,7 +269,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                           fontFamily: 'Outfit',
                                           fontSize: 14,
                                           fontWeight: FontWeight.w800,
-                                          color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+                                          color: isDark ? AppColors.secondaryOrangeLight : AppColors.secondaryOrange,
                                         ),
                                       ),
                                     ],

@@ -76,20 +76,29 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Riwayat Reservasi'),
-              backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
-              foregroundColor: Colors.white,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh_rounded),
-                  onPressed: _load,
-                  tooltip: 'Refresh',
-                ),
-              ],
+      appBar: AppBar(
+          automaticallyImplyLeading: !widget.embedded,
+          title: const Text(
+            'Riwayat Reservasi',
+            style: TextStyle(
+              fontFamily: 'Outfit',
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
+          ),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkSurface
+              : AppColors.secondaryOrange,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: _load,
+              tooltip: 'Refresh',
+            ),
+          ],
+        ),
       // FAB home hanya tampil saat standalone (bukan embedded di dashboard)
       floatingActionButton: widget.embedded
           ? null
@@ -103,7 +112,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
               child: const Icon(Icons.home_rounded, size: 28),
             ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.secondaryOrange))
           : _reservations.isEmpty
               ? Center(
                   child: Column(
@@ -113,7 +122,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
                           size: 80, color: Colors.grey[350]),
                       const SizedBox(height: 20),
                       Text(
-                        'Belum ada reservasi',
+                        widget.embedded ? 'Tidak Ada Reservasi' : 'Belum ada reservasi',
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 18,
@@ -123,39 +132,43 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Buat reservasi pertama Anda sekarang!',
+                        widget.embedded
+                            ? 'Saat ini belum ada data reservasi masuk.'
+                            : 'Buat reservasi pertama Anda sekarang!',
                         style: TextStyle(
                           fontFamily: 'Outfit',
                           fontSize: 13,
                           color: Colors.grey[400],
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          await Navigator.pushNamed(
-                              context, AppRoutes.reservation);
-                          _load();
-                        },
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text(
-                          'Buat Reservasi',
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                      if (!widget.embedded) ...[
+                        const SizedBox(height: 28),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            await Navigator.pushNamed(
+                                context, AppRoutes.reservation);
+                            _load();
+                          },
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: const Text(
+                            'Buat Reservasi',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondaryOrange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 13),
+                            elevation: 0,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondaryOrange,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 13),
-                          elevation: 0,
-                        ),
-                      ),
+                      ],
                     ],
                   ),
                 )

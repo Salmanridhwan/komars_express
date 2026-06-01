@@ -66,61 +66,78 @@ class _ExpressAdminDashboardState extends State<ExpressAdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        selectedIndex: _tabIndex,
-        onDestinationSelected: _onNavTap,
-        backgroundColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkSurface
-                : Colors.white,
-        indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.15),
-        destinations: const [
-          NavigationDestination(
-            key: ValueKey('admin_nav_dashboard'),
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Dashboard',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+              width: 1,
+            ),
           ),
-          NavigationDestination(
-            key: ValueKey('admin_nav_menu'),
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Menu',
-          ),
-          NavigationDestination(
-            key: ValueKey('admin_nav_table'),
-            icon: Icon(Icons.table_restaurant_outlined),
-            selectedIcon: Icon(Icons.table_restaurant_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Meja',
-          ),
-          NavigationDestination(
-            key: ValueKey('admin_nav_orders'),
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Pesanan',
-          ),
-          NavigationDestination(
-            key: ValueKey('admin_nav_reservation'),
-            icon: Icon(Icons.event_seat_outlined),
-            selectedIcon: Icon(Icons.event_seat_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Reservasi',
-          ),
-          NavigationDestination(
-            key: ValueKey('admin_nav_harvest'),
-            icon: Icon(Icons.agriculture_outlined),
-            selectedIcon: Icon(Icons.agriculture_rounded,
-                color: AppColors.secondaryOrange),
-            label: 'Panen',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          height: 64,
+          elevation: 0,
+          selectedIndex: _tabIndex,
+          onDestinationSelected: _onNavTap,
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.18),
+          destinations: const [
+            NavigationDestination(
+              key: ValueKey('admin_nav_dashboard'),
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Dashboard',
+            ),
+            NavigationDestination(
+              key: ValueKey('admin_nav_menu'),
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(Icons.menu_book_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Menu',
+            ),
+            NavigationDestination(
+              key: ValueKey('admin_nav_table'),
+              icon: Icon(Icons.table_restaurant_outlined),
+              selectedIcon: Icon(Icons.table_restaurant_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Meja',
+            ),
+            NavigationDestination(
+              key: ValueKey('admin_nav_orders'),
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon: Icon(Icons.receipt_long_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Pesanan',
+            ),
+            NavigationDestination(
+              key: ValueKey('admin_nav_reservation'),
+              icon: Icon(Icons.event_seat_outlined),
+              selectedIcon: Icon(Icons.event_seat_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Reservasi',
+            ),
+            NavigationDestination(
+              key: ValueKey('admin_nav_harvest'),
+              icon: Icon(Icons.agriculture_outlined),
+              selectedIcon: Icon(Icons.agriculture_rounded,
+                  color: AppColors.secondaryOrange),
+              label: 'Panen',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -186,23 +203,102 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
   }
 
   Future<void> _logout() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Keluar dari Admin?'),
-        content: const Text('Session admin akan diakhiri.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Batal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.deleteRed,
-                foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Keluar'),
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryOrange.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  size: 32,
+                  color: AppColors.secondaryOrange,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Keluar dari Admin?',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Sesi masuk admin Komars Express akan diakhiri dan Anda harus masuk kembali.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 13,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        side: BorderSide(
+                          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.deleteRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Keluar',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
     if (confirm == true) {
@@ -222,12 +318,15 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                gradient: AppColors.expressGradient,
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.restaurant_rounded,
@@ -241,12 +340,13 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                     style: TextStyle(
                         fontFamily: 'Outfit',
                         fontWeight: FontWeight.w800,
-                        fontSize: 16)),
+                        fontSize: 16,
+                        color: Colors.white)),
                 Text('Panel Admin',
                     style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 10,
-                        color: AppColors.secondaryOrange)),
+                        color: Colors.white70)),
               ],
             ),
           ],
@@ -257,22 +357,22 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
             margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.secondaryOrangeSurface,
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: AppColors.secondaryOrange.withValues(alpha: 0.4)),
+                  color: Colors.white.withValues(alpha: 0.4)),
             ),
             child: const Row(
               children: [
                 Icon(Icons.admin_panel_settings_rounded,
-                    size: 14, color: AppColors.secondaryOrange),
+                    size: 14, color: Colors.white),
                 SizedBox(width: 4),
                 Text('ADMIN',
                     style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.secondaryOrangeDark)),
+                        color: Colors.white)),
               ],
             ),
           ),
@@ -313,7 +413,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Selamat Datang, ${widget.admin?.name ?? 'Admin'} 👋',
+                            'Selamat Datang, ${widget.admin?.name ?? 'Admin'}',
                             style: const TextStyle(
                               fontFamily: 'Outfit',
                               fontSize: 20,
@@ -355,7 +455,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                           icon: Icons.payments_rounded,
                           label: 'Pendapatan Hari Ini',
                           value: CurrencyFormatter.format(_todayRevenue),
-                          color: AppColors.statusSuccess,
+                          color: AppColors.secondaryOrange,
                         ),
                         _StatCard(
                           icon: Icons.receipt_long_rounded,
@@ -367,13 +467,13 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                           icon: Icons.menu_book_rounded,
                           label: 'Menu Aktif',
                           value: '$_totalMenus item',
-                          color: AppColors.statusActive,
+                          color: AppColors.secondaryOrange,
                         ),
                         _StatCard(
                           icon: Icons.table_restaurant_rounded,
                           label: 'Total Meja',
                           value: '$_totalTables meja',
-                          color: AppColors.statusPending,
+                          color: AppColors.secondaryOrange,
                         ),
                       ],
                     ),
@@ -399,7 +499,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       icon: Icons.table_restaurant_rounded,
                       title: 'Kelola Meja',
                       subtitle: 'Atur layout & kapasitas meja',
-                      color: AppColors.statusPending,
+                      color: AppColors.secondaryOrange,
                       onTap: () => Navigator.pushNamed(
                           context, AppRoutes.tableManagement),
                     ),
@@ -408,7 +508,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       icon: Icons.receipt_long_rounded,
                       title: 'Lihat Semua Pesanan',
                       subtitle: '$_totalOrders pesanan tercatat',
-                      color: AppColors.statusActive,
+                      color: AppColors.secondaryOrange,
                       onTap: () => Navigator.pushNamed(
                           context, AppRoutes.orderHistory),
                     ),
@@ -417,7 +517,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       icon: Icons.event_seat_rounded,
                       title: 'Lihat Semua Reservasi',
                       subtitle: '$_totalReservations reservasi tercatat',
-                      color: AppColors.primaryGreen,
+                      color: AppColors.secondaryOrange,
                       onTap: () => Navigator.pushNamed(
                           context, AppRoutes.reservationHistory),
                     ),
@@ -426,7 +526,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       icon: Icons.person_rounded,
                       title: 'Profil Admin',
                       subtitle: widget.admin?.email ?? '',
-                      color: Colors.blueGrey,
+                      color: AppColors.secondaryOrange,
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.profile),
                     ),

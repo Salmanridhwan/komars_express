@@ -125,7 +125,7 @@ class _ProfitLossCardState extends State<ProfitLossCard>
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: profitColor.withOpacity(0.1),
+                    color: profitColor.withValues(alpha: 0.1),
                     border: Border.all(color: profitColor, width: 2),
                   ),
                   child: Column(

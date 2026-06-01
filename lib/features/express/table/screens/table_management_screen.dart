@@ -94,40 +94,42 @@ class _TableManagementScreenState extends State<TableManagementScreen>
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      appBar: widget.embedded
-          ? null
-          : AppBar(
-              title: const Text('Manajemen Meja'),
-              backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              actions: [
-                IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
-              ],
-              bottom: TabBar(
-                controller: _tabCtrl,
-                indicatorColor: Colors.white,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
-                tabs: const [
-                  Tab(text: 'Daftar Meja', icon: Icon(Icons.list_alt_rounded, size: 18)),
-                  Tab(text: 'Denah Lantai', icon: Icon(Icons.grid_view_rounded, size: 18)),
-                ],
-              ),
-            ),
-      floatingActionButton: widget.embedded
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _showAddEdit(),
-              backgroundColor: AppColors.secondaryOrange,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Tambah Meja',
-                  style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600)),
-            ),
+      appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
+        title: const Text(
+          'Manajemen Meja',
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
+        ],
+        bottom: TabBar(
+          controller: _tabCtrl,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          labelStyle: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
+          tabs: const [
+            Tab(text: 'Daftar Meja', icon: Icon(Icons.list_alt_rounded, size: 18)),
+            Tab(text: 'Denah Lantai', icon: Icon(Icons.grid_view_rounded, size: 18)),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddEdit(),
+        backgroundColor: AppColors.secondaryOrange,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add_rounded),
+      ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.secondaryOrange))
           : TabBarView(
               controller: _tabCtrl,
               children: [
@@ -183,8 +185,8 @@ class _TableListCard extends StatelessWidget {
   Color _locationColor(String loc) {
     switch (loc) {
       case 'VIP': return const Color(0xFF7B1FA2);
-      case 'Outdoor': return AppColors.primaryGreen;
-      default: return AppColors.statusActive;
+      case 'Outdoor': return AppColors.secondaryOrangeDark;
+      default: return AppColors.secondaryOrange; // Indoor
     }
   }
 
