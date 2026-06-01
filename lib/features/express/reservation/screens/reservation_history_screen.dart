@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/pref_keys.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/status_badge.dart';
 import '../db/reservation_dao.dart';
@@ -20,9 +22,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
   final _dao = ReservationDao();
   List<ReservationModel> _reservations = [];
   bool _isLoading = true;
-
-  // In production, get from session. Here default to 1.
-  final int _userId = 1;
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -32,12 +32,21 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
-    final list = await _dao.getByUser(_userId);
-    if (mounted)
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
+    final role = prefs.getString(PrefKeys.userRole) ?? '';
+    final userId = int.tryParse(token) ?? 1;
+
+    final isAdmin = role.toLowerCase() == 'admin';
+
+    final list = isAdmin ? await _dao.getAll() : await _dao.getByUser(userId);
+    if (mounted) {
       setState(() {
         _reservations = list;
+        _isAdmin = isAdmin;
         _isLoading = false;
       });
+    }
   }
 
   Future<void> _cancel(ReservationModel r) async {
@@ -116,30 +125,32 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
         ],
       ),
       // FAB ditambahkan agar user bisa buat reservasi dari list riwayat
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          if (widget.embedded) {
-            // Jika di tab home, navigasi ke form reservasi
-            await Navigator.pushNamed(context, AppRoutes.reservation);
-            _load();
-          } else {
-            // Perilaku lama untuk standalone
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.home,
-              (route) => false,
-            );
-          }
-        },
-        backgroundColor: AppColors.secondaryOrange,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        tooltip: widget.embedded ? 'Buat Reservasi' : 'Kembali ke Beranda',
-        child: Icon(
-          widget.embedded ? Icons.add_rounded : Icons.home_rounded,
-          size: 28,
-        ),
-      ),
+      floatingActionButton: _isAdmin
+          ? null
+          : FloatingActionButton(
+              onPressed: () async {
+                if (widget.embedded) {
+                  // Jika di tab home, navigasi ke form reservasi
+                  await Navigator.pushNamed(context, AppRoutes.reservation);
+                  _load();
+                } else {
+                  // Perilaku lama untuk standalone
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                    (route) => false,
+                  );
+                }
+              },
+              backgroundColor: AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              tooltip: widget.embedded ? 'Buat Reservasi' : 'Kembali ke Beranda',
+              child: Icon(
+                widget.embedded ? Icons.add_rounded : Icons.home_rounded,
+                size: 28,
+              ),
+            ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
@@ -221,7 +232,7 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
               itemBuilder: (ctx, i) => _ReservationCard(
                 reservation: _reservations[i],
                 isDark: isDark,
-                isAdminView: widget.embedded,
+                isAdminView: _isAdmin,
                 onTap: () async {
                   await Navigator.pushNamed(
                     ctx,

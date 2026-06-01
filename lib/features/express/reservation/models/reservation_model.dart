@@ -53,6 +53,7 @@ class ReservationModel {
         createdAt: map['created_at'] as String?,
         tableNumber: map['table_number'] as String?,
         tableLocation: map['location'] as String?,
+        userName: map['user_name'] as String?,
       );
 
   ReservationModel copyWith({
@@ -67,6 +68,7 @@ class ReservationModel {
     String? createdAt,
     String? tableNumber,
     String? tableLocation,
+    String? userName,
   }) => ReservationModel(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -79,5 +81,6 @@ class ReservationModel {
     createdAt: createdAt ?? this.createdAt,
     tableNumber: tableNumber ?? this.tableNumber,
     tableLocation: tableLocation ?? this.tableLocation,
+    userName: userName ?? this.userName,
   );
 }
