@@ -32,6 +32,8 @@ import '../../features/farm/package/screens/farm_home_screen.dart';
 import '../../features/farm/package/screens/farm_admin_dashboard.dart';
 import '../../features/farm/package/screens/farm_management_screen.dart';
 import '../../features/farm/package/screens/farm_package_detail_screen.dart';
+import '../../features/farm/package/screens/farm_payment_screen.dart';
+import '../../features/farm/package/screens/my_packages_screen.dart';
 import '../../features/farm/package/models/farm_package_model.dart';
 import '../../features/farm/finance/screens/finance_history_screen.dart';
 import '../../features/farm/mitra/screens/farm_mitra_admin_screen.dart';
@@ -123,6 +125,16 @@ class RouteGenerator {
       case AppRoutes.farmPackageDetail:
         final pkg = args as FarmPackage;
         return _slide(FarmPackageDetailScreen(package: pkg));
+      case AppRoutes.farmPackagePayment:
+        final map = args as Map<String, dynamic>;
+        return _slide<bool>(
+          FarmPaymentScreen(
+            package: map['package'] as FarmPackage,
+            userId: map['userId'] as int,
+          ),
+        );
+      case AppRoutes.farmMyPackages:
+        return _slide(MyPackagesScreen(userId: args as int));
       case AppRoutes.farmFinanceHistory:
         final userId = (args as int?) ?? 1;
         return _slide(FinanceHistoryScreen(userId: userId));
@@ -151,8 +163,8 @@ class RouteGenerator {
     }
   }
 
-  static PageRouteBuilder _slide(Widget page) {
-    return PageRouteBuilder(
+  static PageRouteBuilder<T> _slide<T>(Widget page) {
+    return PageRouteBuilder<T>(
       pageBuilder: (_, animation, __) => page,
       transitionsBuilder: (_, animation, __, child) {
         const begin = Offset(1.0, 0.0);

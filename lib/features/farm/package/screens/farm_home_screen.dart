@@ -4,6 +4,7 @@ import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/routes/app_routes.dart';
+import 'my_packages_screen.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../models/farm_package_model.dart';
@@ -258,6 +259,22 @@ class _FarmBerandaState extends State<_FarmBeranda> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              if (widget.user?.id != null) {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.farmMyPackages,
+                  arguments: widget.user!.id!,
+                );
+              }
+            },
+            icon: const Icon(Icons.inventory_2_outlined),
+            tooltip: 'Paket Saya',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

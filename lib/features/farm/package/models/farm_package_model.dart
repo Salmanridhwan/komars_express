@@ -29,8 +29,7 @@ class FarmPackage {
 
   // Convert model to JSON for database storage
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final map = {
       'farm_type': farmType,
       'title': title,
       'description': description,
@@ -42,6 +41,13 @@ class FarmPackage {
       'steps': jsonEncode(steps),
       'equipment_list': jsonEncode(equipmentList),
     };
+
+    // Only include ID if it's not 0 or negative (auto-increment cases)
+    if (id > 0) {
+      map['id'] = id;
+    }
+
+    return map;
   }
 
   // Create model from database row

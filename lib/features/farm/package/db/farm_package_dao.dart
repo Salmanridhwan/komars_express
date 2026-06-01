@@ -12,7 +12,9 @@ class FarmPackageDao {
       final id = await _database.insert(
         'farm_packages',
         package.toJson(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        // Jangan gunakan Replace di sini agar tidak menimpa baris lama
+        // jika terjadi konflik ID 0 atau sejenisnya
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
       return id;
     } catch (e) {

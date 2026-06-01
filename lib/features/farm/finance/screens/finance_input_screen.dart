@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
+import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/financial_record_model.dart';
 
@@ -111,68 +112,87 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Input Financial Record'), elevation: 0),
+      appBar: AppBar(
+        title: const Text(
+          'Input Catatan Keuangan',
+          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Farm Type Selector
-            Text(
-              'Farm Type',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButton<String>(
-              value: _selectedFarmType.toLowerCase(),
-              isExpanded: true,
-              items: ['unggas', 'ikan', 'sayur']
-                  .map(
-                    (type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type[0].toUpperCase() + type.substring(1)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedFarmType = value);
-                  _prefs.setString(PrefKeys.selectedFarmType, value);
-                }
-              },
+            // Farm Type Card (Read Only or Indicator)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primaryGreen.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.eco, color: AppColors.primaryGreen),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Jenis Tani',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      Text(
+                        _selectedFarmType[0].toUpperCase() +
+                            _selectedFarmType.substring(1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.primaryGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 
             // Date Selector
-            Text(
-              'Record Date',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            const Text(
+              'Tanggal Catatan',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 8),
-            GestureDetector(
+            InkWell(
               onTap: () => _selectDate(context),
+              borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  vertical: 12,
+                  vertical: 14,
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      DateFormat('dd MMM yyyy').format(_selectedDate),
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      DateFormat('dd MMMM yyyy').format(_selectedDate),
+                      style: const TextStyle(fontFamily: 'Outfit'),
                     ),
-                    const Icon(Icons.calendar_today),
+                    const Icon(Icons.calendar_today_rounded, size: 20),
                   ],
                 ),
               ),
@@ -180,100 +200,134 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
             const SizedBox(height: 24),
 
             // Income Input
-            Text(
-              'Income *',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
+            _buildInputField(
+              label: 'Pemasukan (Income) *',
               controller: _incomeController,
-              decoration: InputDecoration(
-                hintText: 'Enter income amount',
-                prefixText: 'Rp ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              keyboardType: TextInputType.number,
+              hint: '0',
+              icon: Icons.add_circle_outline_rounded,
+              color: AppColors.statusSuccess,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Expense Input
-            Text(
-              'Expense *',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
+            _buildInputField(
+              label: 'Pengeluaran (Expense) *',
               controller: _expenseController,
-              decoration: InputDecoration(
-                hintText: 'Enter expense amount',
-                prefixText: 'Rp ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              keyboardType: TextInputType.number,
+              hint: '0',
+              icon: Icons.remove_circle_outline_rounded,
+              color: AppColors.secondaryOrange,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Loss Input
-            Text(
-              'Loss *',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
+            _buildInputField(
+              label: 'Kerugian/Kematian (Loss) *',
               controller: _lossController,
-              decoration: InputDecoration(
-                hintText: 'Enter loss amount',
-                prefixText: 'Rp ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              keyboardType: TextInputType.number,
+              hint: '0',
+              icon: Icons.error_outline_rounded,
+              color: AppColors.statusCancelled,
             ),
             const SizedBox(height: 24),
 
             // Notes Input
-            Text(
-              'Notes (Optional)',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+            const Text(
+              'Catatan Tambahan',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _notesController,
               decoration: InputDecoration(
-                hintText: 'Add any notes...',
+                hintText: 'Misal: Penjualan panen tomat atau biaya pakan...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primaryGreen),
                 ),
               ),
               maxLines: 3,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
 
             // Submit Button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 onPressed: _submitForm,
-                child: const Text('Save Record'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Simpan Catatan',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Outfit',
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixText: 'Rp ',
+            prefixStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            suffixIcon: Icon(icon, color: color.withOpacity(0.5)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: color),
+            ),
+          ),
+          keyboardType: TextInputType.number,
+        ),
+      ],
     );
   }
 }

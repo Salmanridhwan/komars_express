@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:komars_express/features/farm/package/db/farm_package_dao.dart';
+import 'package:komars_express/features/farm/package/db/purchased_package_dao.dart';
 import 'package:komars_express/features/farm/finance/db/financial_record_dao.dart';
 import 'package:komars_express/features/farm/mitra/db/mitra_dao.dart';
 import 'package:komars_express/features/farm/mitra/db/harvest_sale_dao.dart';
@@ -12,11 +13,13 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   late FarmPackageDao _farmPackageDao;
+  late PurchasedPackageDao _purchasedPackageDao;
   late FinancialRecordDao _financialRecordDao;
   late MitraDao _mitraDao;
   late HarvestSaleDao _harvestSaleDao;
 
   FarmPackageDao get farmPackageDao => _farmPackageDao;
+  PurchasedPackageDao get purchasedPackageDao => _purchasedPackageDao;
   FinancialRecordDao get financialRecordDao => _financialRecordDao;
   MitraDao get mitraDao => _mitraDao;
   HarvestSaleDao get harvestSaleDao => _harvestSaleDao;
@@ -27,6 +30,7 @@ class DatabaseHelper {
     _db ??= await _initDb();
     // Initialize DAOs with the database instance
     _farmPackageDao = FarmPackageDao(_db!);
+    _purchasedPackageDao = PurchasedPackageDao(_db!);
     _financialRecordDao = FinancialRecordDao(_db!);
     _mitraDao = MitraDao(_db!);
     _harvestSaleDao = HarvestSaleDao(_db!);
@@ -39,7 +43,7 @@ class DatabaseHelper {
       return await factory.openDatabase(
         'komars.db',
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -50,7 +54,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'komars.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
@@ -100,6 +104,22 @@ class DatabaseHelper {
           updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY(farmer_user_id) REFERENCES users(id) ON DELETE CASCADE,
           FOREIGN KEY(mitra_id) REFERENCES mitra_partnerships(id)
+        )
+      ''');
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS purchased_packages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          package_id INTEGER NOT NULL,
+          purchase_date TEXT NOT NULL,
+          payment_method TEXT NOT NULL,
+          price REAL NOT NULL,
+          status TEXT NOT NULL DEFAULT 'Success',
+          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY(package_id) REFERENCES farm_packages(id) ON DELETE CASCADE
         )
       ''');
     }
@@ -262,6 +282,21 @@ class DatabaseHelper {
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(farmer_user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY(mitra_id) REFERENCES mitra_partnerships(id)
+      )
+    ''');
+
+    // 11. purchased_packages
+    await db.execute('''
+      CREATE TABLE purchased_packages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        package_id INTEGER NOT NULL,
+        purchase_date TEXT NOT NULL,
+        payment_method TEXT NOT NULL,
+        price REAL NOT NULL,
+        status TEXT NOT NULL DEFAULT 'Success',
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(package_id) REFERENCES farm_packages(id) ON DELETE CASCADE
       )
     ''');
   }

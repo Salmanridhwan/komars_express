@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/pref_keys.dart';
+import '../../../../core/database/database_helper.dart';
+import '../../../../core/routes/app_routes.dart';
 import '../models/farm_package_model.dart';
+import 'farm_payment_screen.dart';
 
 class FarmPackageDetailScreen extends StatefulWidget {
   final FarmPackage package;
+  final bool? purchased;
 
-  const FarmPackageDetailScreen({Key? key, required this.package})
-    : super(key: key);
+  const FarmPackageDetailScreen({
+    Key? key,
+    required this.package,
+    this.purchased,
+  }) : super(key: key);
 
   @override
   State<FarmPackageDetailScreen> createState() =>
@@ -14,6 +23,63 @@ class FarmPackageDetailScreen extends StatefulWidget {
 
 class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
   bool _isPurchased = false;
+  int? _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPurchased = widget.purchased ?? false;
+    _checkPurchaseStatus();
+  }
+
+  Future<void> _checkPurchaseStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
+    final userId = int.tryParse(token);
+
+    if (mounted) {
+      setState(() => _userId = userId);
+    }
+
+    if (_isPurchased) return;
+
+    if (userId != null) {
+      final db = DatabaseHelper.instance;
+      final purchased = await db.purchasedPackageDao.hasPurchased(
+        userId,
+        widget.package.id,
+      );
+      if (mounted) {
+        setState(() => _isPurchased = purchased);
+      }
+    }
+  }
+
+  Future<void> _navToPayment() async {
+    // Pastikan _userId sudah terisi dari _checkPurchaseStatus
+    if (_userId == null) {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
+      _userId = int.tryParse(token);
+    }
+
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan login terlebih dahulu')),
+      );
+      return;
+    }
+
+    final success = await Navigator.pushNamed<bool>(
+      context,
+      AppRoutes.farmPackagePayment,
+      arguments: {'package': widget.package, 'userId': _userId!},
+    );
+
+    if (success == true && mounted) {
+      setState(() => _isPurchased = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +334,7 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                 ],
               ),
               child: ElevatedButton(
-                onPressed: () => _showPurchaseConfirmation(context),
+                onPressed: _navToPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade700,
                   foregroundColor: Colors.white,

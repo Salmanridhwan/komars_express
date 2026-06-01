@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
+import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/financial_record_model.dart';
 import '../widgets/profit_loss_card.dart';
@@ -99,21 +100,21 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Record'),
+        title: const Text('Hapus Catatan'),
         content: Text(
-          'Are you sure you want to delete the record from ${DateFormat('dd MMM yyyy').format(DateTime.parse(record.recordDate))}?',
+          'Apakah Anda yakin ingin menghapus catatan tanggal ${DateFormat('dd MMM yyyy').format(DateTime.parse(record.recordDate))}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Batal'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deleteRecord(record.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -123,244 +124,320 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Finance History'), elevation: 0),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FinanceInputScreen(userId: widget.userId),
-            ),
-          ).then((result) {
-            if (result == true) {
-              _loadRecords();
-            }
-          });
-        },
-        child: const Icon(Icons.add),
+      appBar: AppBar(
+        title: const Text(
+          'Riwayat Keuangan',
+          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Farm Type and Filter Controls
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Farm Type',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey.shade600),
-                            ),
-                            const SizedBox(height: 4),
-                            DropdownButton<String>(
-                              value: _selectedFarmType.toLowerCase(),
-                              isExpanded: true,
-                              items: ['unggas', 'ikan', 'sayur']
-                                  .map(
-                                    (type) => DropdownMenuItem(
-                                      value: type,
-                                      child: Text(
-                                        type[0].toUpperCase() +
-                                            type.substring(1),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() => _selectedFarmType = value);
-                                  _prefs.setString(
-                                    PrefKeys.selectedFarmType,
-                                    value,
-                                  );
-                                  _loadRecords();
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Period',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey.shade600),
-                            ),
-                            const SizedBox(height: 4),
-                            DropdownButton<String>(
-                              value: _filterPeriod,
-                              isExpanded: true,
-                              items: ['weekly', 'monthly']
-                                  .map(
-                                    (period) => DropdownMenuItem(
-                                      value: period,
-                                      child: Text(period),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() => _filterPeriod = value);
-                                  _prefs.setString(
-                                    PrefKeys.financeFilterPeriod,
-                                    value,
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Financial Summary Card
-                  ProfitLossCard(
-                    income: _totalIncome,
-                    expense: _totalExpense,
-                    loss: _totalLoss,
-                    netProfit: _totalProfit,
-                    title: 'Total Summary',
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Records List
-                  Text(
-                    'Records',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _records.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 32),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.inbox_outlined,
-                                  size: 48,
-                                  color: Colors.grey.shade400,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No records found',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(color: Colors.grey.shade600),
-                                ),
-                              ],
-                            ),
+          : RefreshIndicator(
+              onRefresh: _loadRecords,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Filter Section
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _records.length,
-                          itemBuilder: (context, index) {
-                            final record = _records[index];
-                            final isProfit = record.netProfit >= 0;
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.all(12),
-                                leading: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: isProfit
-                                        ? Colors.green.shade100
-                                        : Colors.red.shade100,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    isProfit
-                                        ? Icons.trending_up
-                                        : Icons.trending_down,
-                                    color: isProfit ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                                title: Text(
-                                  DateFormat(
-                                    'dd MMM yyyy',
-                                  ).format(DateTime.parse(record.recordDate)),
-                                ),
-                                subtitle: Column(
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Income: Rp ${record.income.toStringAsFixed(0)}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    Text(
-                                      'Profit: Rp ${record.netProfit.toStringAsFixed(0)}',
+                                    const Text(
+                                      'Jenis Tani',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: isProfit
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey,
                                       ),
                                     ),
-                                  ],
-                                ),
-                                trailing: PopupMenuButton(
-                                  itemBuilder: (context) => [
-                                    PopupMenuItem(
-                                      onTap: () {
-                                        Future.delayed(Duration.zero, () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FinanceDetailScreen(
-                                                    record: record,
-                                                  ),
+                                    const SizedBox(height: 4),
+                                    DropdownButton<String>(
+                                      value: _selectedFarmType.toLowerCase(),
+                                      isExpanded: true,
+                                      underline: const SizedBox(),
+                                      items: ['unggas', 'ikan', 'sayur']
+                                          .map(
+                                            (type) => DropdownMenuItem(
+                                              value: type,
+                                              child: Text(
+                                                type[0].toUpperCase() +
+                                                    type.substring(1),
+                                                style: const TextStyle(
+                                                  fontFamily: 'Outfit',
+                                                ),
+                                              ),
                                             ),
-                                          ).then((result) {
-                                            if (result == true) {
-                                              _loadRecords();
-                                            }
-                                          });
-                                        });
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        if (value != null) {
+                                          setState(
+                                            () => _selectedFarmType = value,
+                                          );
+                                          _prefs.setString(
+                                            PrefKeys.selectedFarmType,
+                                            value,
+                                          );
+                                          _loadRecords();
+                                        }
                                       },
-                                      child: const Text('View'),
-                                    ),
-                                    PopupMenuItem(
-                                      onTap: () {
-                                        Future.delayed(Duration.zero, () {
-                                          _showDeleteConfirmation(record);
-                                        });
-                                      },
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                            );
-                          },
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Periode',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    DropdownButton<String>(
+                                      value: _filterPeriod,
+                                      isExpanded: true,
+                                      underline: const SizedBox(),
+                                      items: ['weekly', 'monthly']
+                                          .map(
+                                            (period) => DropdownMenuItem(
+                                              value: period,
+                                              child: Text(
+                                                period[0].toUpperCase() +
+                                                    period.substring(1),
+                                                style: const TextStyle(
+                                                  fontFamily: 'Outfit',
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        if (value != null) {
+                                          setState(() => _filterPeriod = value);
+                                          _prefs.setString(
+                                            PrefKeys.financeFilterPeriod,
+                                            value,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Financial Summary Card
+                    ProfitLossCard(
+                      income: _totalIncome,
+                      expense: _totalExpense,
+                      loss: _totalLoss,
+                      netProfit: _totalProfit,
+                      title: 'Ringkasan Keuangan',
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Records List
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Daftar Catatan',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                  const SizedBox(height: 32),
-                ],
+                        TextButton(
+                          onPressed: () async {
+                            final success = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) =>
+                                    FinanceInputScreen(userId: widget.userId),
+                              ),
+                            );
+                            if (success == true) _loadRecords();
+                          },
+                          child: const Text('Tambah Baru'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _records.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 48),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 64,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Belum ada catatan keuangan\nuntuk kategori ini',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _records.length,
+                            itemBuilder: (context, index) {
+                              final record = _records[index];
+                              final isProfit = record.netProfit >= 0;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: ListTile(
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (ctx) =>
+                                            FinanceDetailScreen(record: record),
+                                      ),
+                                    );
+                                    _loadRecords();
+                                  },
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  leading: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: isProfit
+                                          ? Colors.green.withOpacity(0.1)
+                                          : Colors.red.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      isProfit
+                                          ? Icons.trending_up_rounded
+                                          : Icons.trending_down_rounded,
+                                      color: isProfit
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    DateFormat(
+                                      'dd MMMM yyyy',
+                                    ).format(DateTime.parse(record.recordDate)),
+                                    style: const TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    (record.notes == null ||
+                                            record.notes!.isEmpty)
+                                        ? 'Tidak ada catatan'
+                                        : record.notes!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Rp ${record.income.toStringAsFixed(0)}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${isProfit ? '+' : ''}Rp ${record.netProfit.toStringAsFixed(0)}',
+                                        style: TextStyle(
+                                          fontFamily: 'Outfit',
+                                          fontWeight: FontWeight.w900,
+                                          color: isProfit
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final success = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => FinanceInputScreen(userId: widget.userId),
+            ),
+          );
+          if (success == true) _loadRecords();
+        },
+        backgroundColor: AppColors.primaryGreen,
+        child: const Icon(Icons.add_rounded, color: Colors.white),
+      ),
     );
   }
 }

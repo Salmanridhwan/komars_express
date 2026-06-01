@@ -145,7 +145,9 @@ class _ReservationHistoryScreenState extends State<ReservationHistoryScreen> {
               backgroundColor: AppColors.secondaryOrange,
               foregroundColor: Colors.white,
               elevation: 4,
-              tooltip: widget.embedded ? 'Buat Reservasi' : 'Kembali ke Beranda',
+              tooltip: widget.embedded
+                  ? 'Buat Reservasi'
+                  : 'Kembali ke Beranda',
               child: Icon(
                 widget.embedded ? Icons.add_rounded : Icons.home_rounded,
                 size: 28,

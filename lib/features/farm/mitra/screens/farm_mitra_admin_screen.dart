@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/database/database_helper.dart';
+import 'farm_mitra_form_screen.dart';
 import '../models/mitra_model.dart';
 
 /// Layar daftar mitra untuk Admin KomarFarm.
@@ -30,7 +31,11 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
       final dao = DatabaseHelper.instance.mitraDao;
       await dao.seedDefaultMitra();
       final list = await dao.getAll();
-      if (mounted) setState(() { _mitras = list; _loading = false; });
+      if (mounted)
+        setState(() {
+          _mitras = list;
+          _loading = false;
+        });
     } catch (e) {
       debugPrint('Error loading mitra: $e');
       if (mounted) setState(() => _loading = false);
@@ -53,6 +58,22 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FarmMitraFormScreen(),
+                ),
+              );
+              if (result == true) _loadMitra();
+            },
+            icon: const Icon(Icons.add_business_rounded),
+            tooltip: 'Tambah Mitra',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
@@ -84,8 +105,7 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
                     const SizedBox(width: 10),
                     _HeaderBadge(
                       icon: Icons.verified_rounded,
-                      label:
-                          '${_mitras.where((m) => m.isActive).length} Aktif',
+                      label: '${_mitras.where((m) => m.isActive).length} Aktif',
                     ),
                   ],
                 ),
@@ -98,19 +118,21 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
             child: _loading
                 ? const Center(
                     child: CircularProgressIndicator(
-                        color: AppColors.primaryGreen))
+                      color: AppColors.primaryGreen,
+                    ),
+                  )
                 : _mitras.isEmpty
-                    ? _buildEmpty()
-                    : RefreshIndicator(
-                        onRefresh: _loadMitra,
-                        color: AppColors.primaryGreen,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _mitras.length,
-                          itemBuilder: (ctx, i) =>
-                              _MitraCard(mitra: _mitras[i]),
-                        ),
-                      ),
+                ? _buildEmpty()
+                : RefreshIndicator(
+                    onRefresh: _loadMitra,
+                    color: AppColors.primaryGreen,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _mitras.length,
+                      itemBuilder: (ctx, i) =>
+                          _MitraCard(mitra: _mitras[i], onRefresh: _loadMitra),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -122,8 +144,7 @@ class _FarmMitraAdminScreenState extends State<FarmMitraAdminScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.handshake_outlined,
-              size: 72, color: Colors.grey.shade300),
+          Icon(Icons.handshake_outlined, size: 72, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'Belum ada mitra terdaftar',
@@ -179,7 +200,8 @@ class _HeaderBadge extends StatelessWidget {
 
 class _MitraCard extends StatelessWidget {
   final MitraPartnership mitra;
-  const _MitraCard({required this.mitra});
+  final VoidCallback onRefresh;
+  const _MitraCard({required this.mitra, required this.onRefresh});
 
   IconData _resolveIcon(String? logoIcon) {
     switch (logoIcon) {
@@ -259,7 +281,9 @@ class _MitraCard extends StatelessWidget {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: mitra.isActive
                                     ? AppColors.primaryGreenSurface
@@ -294,8 +318,11 @@ class _MitraCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(Icons.category_outlined,
-                                size: 12, color: AppColors.secondaryOrange),
+                            Icon(
+                              Icons.category_outlined,
+                              size: 12,
+                              color: AppColors.secondaryOrange,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               mitra.category,
@@ -311,15 +338,17 @@ class _MitraCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 13, color: Colors.grey),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13,
+                    color: Colors.grey,
+                  ),
                 ],
               ),
             ),
             // ── Footer ─────────────────────────────────────────────────────
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.04)
@@ -331,8 +360,11 @@ class _MitraCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 12, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 12,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Bergabung: ${mitra.joinedDate}',
@@ -345,8 +377,11 @@ class _MitraCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.alternate_email_rounded,
-                      size: 12, color: Colors.grey),
+                  const Icon(
+                    Icons.alternate_email_rounded,
+                    size: 12,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     mitra.contact,
@@ -374,7 +409,7 @@ class _MitraCard extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => _MitraDetailSheet(mitra: mitra),
+      builder: (ctx) => _MitraDetailSheet(mitra: mitra, onRefresh: onRefresh),
     );
   }
 }
@@ -383,7 +418,39 @@ class _MitraCard extends StatelessWidget {
 
 class _MitraDetailSheet extends StatelessWidget {
   final MitraPartnership mitra;
-  const _MitraDetailSheet({required this.mitra});
+  final VoidCallback onRefresh;
+  const _MitraDetailSheet({required this.mitra, required this.onRefresh});
+
+  Future<void> _deleteMitra(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Mitra'),
+        content: Text('Apakah Anda yakin ingin menghapus kerjasama dengan ${mitra.mitraName}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await DatabaseHelper.instance.mitraDao.delete(mitra.id!);
+        onRefresh();
+        if (context.mounted) Navigator.pop(context); // close sheet
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menghapus: $e')),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -398,6 +465,141 @@ class _MitraDetailSheet extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          mitra.mitraName,
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          mitra.companyName,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton(
+                    icon: const Icon(Icons.more_vert_rounded),
+                    itemBuilder: (ctx) => [
+                      PopupMenuItem(
+                        onTap: () async {
+                          // Allow sheet to close or wait?
+                          Future.delayed(Duration.zero, () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (ctx) => FarmMitraFormScreen(mitra: mitra),
+                              ),
+                            );
+                            if (result == true) {
+                              onRefresh();
+                              Navigator.pop(context); // close sheet
+                            }
+                          });
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.edit_rounded, size: 20),
+                            SizedBox(width: 12),
+                            Text('Edit Data'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () => Future.delayed(Duration.zero, () => _deleteMitra(context)),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.delete_outline_rounded, size: 20, color: Colors.red),
+                            SizedBox(width: 12),
+                            Text('Hapus Mitra', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _detailItem(Icons.category_rounded, 'Kategori Bisnis', mitra.category),
+              _detailItem(Icons.phone_rounded, 'Kontak Kerjasama', mitra.contact),
+              _detailItem(Icons.calendar_month_rounded, 'Tanggal Bergabung', mitra.joinedDate),
+              const Divider(height: 32),
+              const Text(
+                'Deskripsi & Lingkup Kerjasama',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                mitra.description ?? 'Tidak ada deskripsi tambahan.',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                  height: 1.5,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailItem(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryGreen.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.primaryGreen, size: 18),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Handle
@@ -422,8 +624,11 @@ class _MitraDetailSheet extends StatelessWidget {
                       gradient: AppColors.expressGradient,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.restaurant_rounded,
-                        color: Colors.white, size: 30),
+                    child: const Icon(
+                      Icons.restaurant_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -441,7 +646,9 @@ class _MitraDetailSheet extends StatelessWidget {
                         Container(
                           margin: const EdgeInsets.only(top: 4),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3),
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: mitra.isActive
                                 ? AppColors.primaryGreenSurface
@@ -466,14 +673,30 @@ class _MitraDetailSheet extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              _DetailRow(icon: Icons.business_rounded,
-                  label: 'Perusahaan', value: mitra.companyName, isDark: isDark),
-              _DetailRow(icon: Icons.category_rounded,
-                  label: 'Kategori', value: mitra.category, isDark: isDark),
-              _DetailRow(icon: Icons.email_rounded,
-                  label: 'Kontak', value: mitra.contact, isDark: isDark),
-              _DetailRow(icon: Icons.calendar_month_rounded,
-                  label: 'Tgl Bergabung', value: mitra.joinedDate, isDark: isDark),
+              _DetailRow(
+                icon: Icons.business_rounded,
+                label: 'Perusahaan',
+                value: mitra.companyName,
+                isDark: isDark,
+              ),
+              _DetailRow(
+                icon: Icons.category_rounded,
+                label: 'Kategori',
+                value: mitra.category,
+                isDark: isDark,
+              ),
+              _DetailRow(
+                icon: Icons.email_rounded,
+                label: 'Kontak',
+                value: mitra.contact,
+                isDark: isDark,
+              ),
+              _DetailRow(
+                icon: Icons.calendar_month_rounded,
+                label: 'Tgl Bergabung',
+                value: mitra.joinedDate,
+                isDark: isDark,
+              ),
               if (mitra.description != null) ...[
                 const SizedBox(height: 16),
                 Text(

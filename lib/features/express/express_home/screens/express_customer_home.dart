@@ -46,11 +46,20 @@ class _ExpressCustomerHomeState extends State<ExpressCustomerHome> {
       case 1:
         return const MenuListScreen(embedded: true);
       case 2:
-        return const OrderHistoryScreen(embedded: true);
+        return OrderHistoryScreen(
+          embedded: true,
+          key: ValueKey('orders_tab_$_tabIndex'),
+        );
       case 3:
-        return const ReservationHistoryScreen(embedded: true);
+        return ReservationHistoryScreen(
+          embedded: true,
+          key: ValueKey('res_tab_$_tabIndex'),
+        );
       case 4:
-        return const ProfileScreen(embedded: true);
+        return ProfileScreen(
+          embedded: true,
+          key: ValueKey('profile_tab_$_tabIndex'),
+        );
       default:
         return _ExpressBeranda(user: _user);
     }

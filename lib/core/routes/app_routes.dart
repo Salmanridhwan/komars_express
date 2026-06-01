@@ -39,6 +39,8 @@ class AppRoutes {
   // ─── Farm Customer ────────────────────────────────────────────────────────
   static const String farmCustomerHome = '/farm/home';
   static const String farmPackageDetail = '/farm/package/detail';
+  static const String farmPackagePayment = '/farm/package/payment';
+  static const String farmMyPackages = '/farm/package/purchased';
   static const String farmFinanceHistory = '/farm/finance/history';
   static const String farmFinanceInput = '/farm/finance/input';
   static const String farmFinanceDetail = '/farm/finance/detail';

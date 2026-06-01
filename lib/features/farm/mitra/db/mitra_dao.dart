@@ -63,8 +63,9 @@ class MitraDao {
 
   // ── COUNT ──────────────────────────────────────────────────────────────────
   Future<int> count() async {
-    final result = await _database
-        .rawQuery('SELECT COUNT(*) as count FROM mitra_partnerships');
+    final result = await _database.rawQuery(
+      'SELECT COUNT(*) as count FROM mitra_partnerships',
+    );
     return Sqflite.firstIntValue(result) ?? 0;
   }
 
@@ -84,6 +85,15 @@ class MitraDao {
       mitra.toJson(),
       where: 'id = ?',
       whereArgs: [mitra.id],
+    );
+  }
+
+  // ── DELETE ─────────────────────────────────────────────────────────────────
+  Future<int> delete(int id) async {
+    return await _database.delete(
+      'mitra_partnerships',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 }
