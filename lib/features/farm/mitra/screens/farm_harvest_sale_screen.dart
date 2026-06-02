@@ -98,16 +98,17 @@ class _SellFormTabState extends State<_SellFormTab> {
 
   List<MitraPartnership> _mitras = [];
   MitraPartnership? _selectedMitra;
-  String _selectedFarmType = 'ayam';
+  String _selectedFarmType = 'unggas';
   bool _loading = true;
   bool _submitting = false;
   double _totalPrice = 0;
 
-  final Map<String, String> _farmTypeLabels = {
-    'ayam': '🐔 Ayam',
-    'lele': '🐟 Lele',
-    'hidroponik': '🌿 Hidroponik',
-    'sayuran': '🥬 Sayuran',
+  /// Kategori jenis usaha tani — harus sinkron dengan preset di farm_package_form_screen
+  static const Map<String, String> _farmTypeLabels = {
+    'unggas': '🐔 Unggas',
+    'ikan': '🐟 Ikan',
+    'sayur': '🥬 Sayur',
+    'campuran': '🌾 Campuran',
   };
 
   @override
@@ -281,10 +282,10 @@ class _SellFormTabState extends State<_SellFormTab> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            gradient: AppColors.expressGradient,
+                            gradient: AppColors.primaryGradient,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.restaurant_rounded,
+                          child: const Icon(Icons.storefront_rounded,
                               color: Colors.white, size: 22),
                         ),
                         const SizedBox(width: 12),

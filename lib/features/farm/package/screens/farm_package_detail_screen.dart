@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/pref_keys.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../models/farm_package_model.dart';
-import 'farm_payment_screen.dart';
 
 class FarmPackageDetailScreen extends StatefulWidget {
   final FarmPackage package;
   final bool? purchased;
 
   const FarmPackageDetailScreen({
-    Key? key,
+    super.key,
     required this.package,
     this.purchased,
-  }) : super(key: key);
+  });
 
   @override
   State<FarmPackageDetailScreen> createState() =>
@@ -56,7 +56,6 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
   }
 
   Future<void> _navToPayment() async {
-    // Pastikan _userId sudah terisi dari _checkPurchaseStatus
     if (_userId == null) {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
@@ -64,12 +63,14 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
     }
 
     if (_userId == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Silakan login terlebih dahulu')),
       );
       return;
     }
 
+    if (!mounted) return;
     final success = await Navigator.pushNamed<bool>(
       context,
       AppRoutes.farmPackagePayment,
@@ -83,122 +84,137 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Package Details'), elevation: 0),
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      appBar: AppBar(
+        title: const Text(
+          'Detail Paket',
+          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: AppColors.primaryGreen,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.green.shade400, Colors.green.shade700],
+            // ── Header Card ───────────────────────────────────────────────────
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: AppColors.primaryGradient,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryGreen.withValues(alpha: 0.3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   ),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.agriculture,
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                ],
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.package.title,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    child: const Icon(
+                      Icons.agriculture_rounded,
+                      color: Colors.white,
+                      size: 32,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Farm Type: ${widget.package.farmType}',
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.package.title,
+                    style: const TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Tipe: ${widget.package.farmType.toUpperCase()}',
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+                        fontFamily: 'Outfit',
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Description
-            Text(
-              'Description',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            // ── Deskripsi ─────────────────────────────────────────────────────
+            _SectionTitle(title: 'Deskripsi', isDark: isDark),
             const SizedBox(height: 8),
             Text(
               widget.package.description,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 14,
+                height: 1.6,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+              ),
             ),
             const SizedBox(height: 24),
 
-            // Financial Details
-            Text(
-              'Financial Details',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            // ── Detail Finansial ──────────────────────────────────────────────
+            _SectionTitle(title: 'Detail Finansial', isDark: isDark),
             const SizedBox(height: 12),
-            _DetailRow(
-              label: 'Initial Capital (Min)',
-              value:
-                  'Rp ${widget.package.initialCapitalMin.toStringAsFixed(0)}',
-            ),
-            _DetailRow(
-              label: 'Initial Capital (Recommended)',
-              value:
-                  'Rp ${widget.package.initialCapitalRec.toStringAsFixed(0)}',
-            ),
-            _DetailRow(
-              label: 'ROI Period',
-              value: '${widget.package.roiMonths} months',
-            ),
-            _DetailRow(
-              label: 'Monthly Income (Est.)',
-              value: 'Rp ${widget.package.monthlyIncomeEst.toStringAsFixed(0)}',
-            ),
-            _DetailRow(
-              label: 'Harvest Time',
-              value: '${widget.package.harvestTimeDays} days',
-            ),
+            _FinancialCard(isDark: isDark, children: [
+              _DetailRow(
+                label: 'Modal Awal (Minimum)',
+                value: 'Rp ${_formatNumber(widget.package.initialCapitalMin)}',
+                isDark: isDark,
+              ),
+              _DetailRow(
+                label: 'Modal Awal (Rekomendasi)',
+                value: 'Rp ${_formatNumber(widget.package.initialCapitalRec)}',
+                isDark: isDark,
+              ),
+              _DetailRow(
+                label: 'Periode ROI',
+                value: '${widget.package.roiMonths} bulan',
+                isDark: isDark,
+              ),
+              _DetailRow(
+                label: 'Estimasi Pendapatan/Bulan',
+                value: 'Rp ${_formatNumber(widget.package.monthlyIncomeEst)}',
+                isDark: isDark,
+              ),
+              _DetailRow(
+                label: 'Waktu Panen',
+                value: '${widget.package.harvestTimeDays} hari',
+                isDark: isDark,
+                isLast: true,
+              ),
+            ]),
             const SizedBox(height: 24),
 
             if (_isPurchased) ...[
-              // Steps
-              Text(
-                'Implementation Steps',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
+              // ── Langkah-langkah ───────────────────────────────────────────
+              _SectionTitle(title: 'Langkah Implementasi', isDark: isDark),
               const SizedBox(height: 12),
               ListView.builder(
                 shrinkWrap: true,
@@ -214,15 +230,17 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                           width: 28,
                           height: 28,
                           decoration: BoxDecoration(
-                            color: Colors.green.shade100,
+                            color: AppColors.primaryGreen.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Center(
                             child: Text(
                               '${index + 1}',
-                              style: TextStyle(
-                                color: Colors.green.shade700,
+                              style: const TextStyle(
+                                fontFamily: 'Outfit',
+                                color: AppColors.primaryGreen,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
                           ),
@@ -231,7 +249,14 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                         Expanded(
                           child: Text(
                             widget.package.steps[index],
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 14,
+                              height: 1.5,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary,
+                            ),
                           ),
                         ),
                       ],
@@ -241,13 +266,8 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Equipment List
-              Text(
-                'Required Equipment',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
+              // ── Peralatan ─────────────────────────────────────────────────
+              _SectionTitle(title: 'Peralatan yang Dibutuhkan', isDark: isDark),
               const SizedBox(height: 12),
               ListView.builder(
                 shrinkWrap: true,
@@ -258,16 +278,22 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.check_circle,
-                          color: Colors.green.shade600,
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.primaryGreen,
                           size: 20,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             widget.package.equipmentList[index],
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.darkTextPrimary
+                                  : AppColors.lightTextPrimary,
+                            ),
                           ),
                         ),
                       ],
@@ -276,39 +302,56 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                 },
               ),
             ] else ...[
-              // Placeholder for non-purchased users
+              // ── Konten Terkunci ───────────────────────────────────────────
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: isDark
+                      ? AppColors.darkCard
+                      : AppColors.primaryGreenSurface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkDivider
+                        : AppColors.farmBadgeBorder,
+                  ),
                 ),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.lock_outline_rounded,
-                      size: 40,
-                      color: Colors.grey.shade400,
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 36,
+                        color: AppColors.primaryGreen,
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'Panduan Eksklusif Terkunci',
                       style: TextStyle(
                         fontFamily: 'Outfit',
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: AppColors.primaryGreenDark,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
-                      'Beli paket starter kit ini untuk membuka langkah-langkah pembuatan dan daftar peralatan yang diperlukan.',
+                      'Beli paket starter kit ini untuk membuka langkah-langkah implementasi dan daftar peralatan yang diperlukan.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        height: 1.5,
+                        color: isDark
+                            ? AppColors.darkTextSecondary
+                            : AppColors.farmBadgeText,
                       ),
                     ),
                   ],
@@ -322,21 +365,26 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
       bottomNavigationBar: _isPurchased
           ? null
           : Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+                color: isDark ? AppColors.darkSurface : Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, -4),
                   ),
                 ],
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                  ),
+                ),
               ),
               child: ElevatedButton(
                 onPressed: _navToPayment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade700,
+                  backgroundColor: AppColors.primaryGreen,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 54),
                   shape: RoundedRectangleBorder(
@@ -344,162 +392,149 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Beli Paket Starter Kit',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.shopping_bag_rounded, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'Beli Paket Starter Kit',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
     );
   }
 
-  void _showPurchaseConfirmation(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Konfirmasi Pembelian',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontFamily: 'Outfit',
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Anda akan membeli paket "${widget.package.title}" dengan estimasi modal awal Rp ${widget.package.initialCapitalMin.toStringAsFixed(0)}.',
-              style: const TextStyle(fontFamily: 'Outfit', fontSize: 15),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Batal'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      setState(() => _isPurchased = true);
-                      _showSuccessDialog(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Konfirmasi'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+  String _formatNumber(double value) {
+    final str = value.toStringAsFixed(0);
+    final buffer = StringBuffer();
+    final chars = str.split('').reversed.toList();
+    for (int i = 0; i < chars.length; i++) {
+      if (i > 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(chars[i]);
+    }
+    return buffer.toString().split('').reversed.join();
   }
+}
 
-  void _showSuccessDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle_rounded,
-              color: Colors.green,
-              size: 72,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Berhasil!',
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Paket starter kit telah berhasil dibeli. Silakan cek detail panduan di menu paket Anda.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Outfit'),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                minimumSize: const Size(double.infinity, 48),
-              ),
-              child: const Text('OK'),
-            ),
-          ],
+// ── Section Title ─────────────────────────────────────────────────────────────
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final bool isDark;
+  const _SectionTitle({required this.title, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          decoration: BoxDecoration(
+            color: AppColors.primaryGreen,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-      ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
+// ── Financial Card ────────────────────────────────────────────────────────────
 
-  const _DetailRow({Key? key, required this.label, required this.value})
-    : super(key: key);
+class _FinancialCard extends StatelessWidget {
+  final bool isDark;
+  final List<Widget> children;
+  const _FinancialCard({required this.isDark, required this.children});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-          ),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+        ),
       ),
+      child: Column(children: children),
+    );
+  }
+}
+
+// ── Detail Row ────────────────────────────────────────────────────────────────
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isDark;
+  final bool isLast;
+
+  const _DetailRow({
+    required this.label,
+    required this.value,
+    required this.isDark,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 13,
+                  color: isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.lightTextSecondary,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryGreen,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (!isLast)
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
+            color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+          ),
+      ],
     );
   }
 }

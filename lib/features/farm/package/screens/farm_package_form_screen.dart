@@ -6,7 +6,7 @@ import '../models/farm_package_model.dart';
 class FarmPackageFormScreen extends StatefulWidget {
   final FarmPackage? package;
 
-  const FarmPackageFormScreen({Key? key, this.package}) : super(key: key);
+  const FarmPackageFormScreen({super.key, this.package});
 
   @override
   State<FarmPackageFormScreen> createState() => _FarmPackageFormScreenState();
@@ -29,8 +29,8 @@ class _FarmPackageFormScreenState extends State<FarmPackageFormScreen> {
   late TextEditingController _equipmentListController;
   late TextEditingController _stepsController;
 
-  // Preset farm types for quick choice chips
-  final List<String> _presetFarmTypes = ['unggas', 'ikan', 'sayur'];
+  // Preset farm types — harus sinkron dengan _farmTypeLabels di farm_harvest_sale_screen
+  final List<String> _presetFarmTypes = ['unggas', 'ikan', 'sayur', 'campuran'];
 
   @override
   void initState() {
