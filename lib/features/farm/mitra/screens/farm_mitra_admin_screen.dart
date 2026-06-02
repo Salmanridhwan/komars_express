@@ -252,7 +252,7 @@ class _MitraCard extends StatelessWidget {
                     width: 54,
                     height: 54,
                     decoration: BoxDecoration(
-                      gradient: AppColors.expressGradient,
+                      gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -321,7 +321,7 @@ class _MitraCard extends StatelessWidget {
                             Icon(
                               Icons.category_outlined,
                               size: 12,
-                              color: AppColors.secondaryOrange,
+                              color: AppColors.primaryGreen,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -329,7 +329,7 @@ class _MitraCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontFamily: 'Outfit',
                                 fontSize: 11,
-                                color: AppColors.secondaryOrange,
+                                color: AppColors.primaryGreen,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -582,7 +582,7 @@ class _MitraDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: AppColors.primaryGreen, size: 18),

@@ -384,9 +384,12 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.secondaryOrange),
+            )
           : RefreshIndicator(
               onRefresh: _loadStats,
+              color: AppColors.secondaryOrange,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(20),

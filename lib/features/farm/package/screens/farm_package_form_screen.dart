@@ -255,11 +255,11 @@ class _FarmPackageFormScreenState extends State<FarmPackageFormScreen> {
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.statusCancelled, width: 1.5),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+            borderSide: const BorderSide(color: AppColors.statusCancelled, width: 1.5),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -275,9 +275,10 @@ class _FarmPackageFormScreenState extends State<FarmPackageFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditMode = widget.package != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
         title: Text(
           isEditMode ? 'Edit Paket Investasi' : 'Tambah Paket Investasi',

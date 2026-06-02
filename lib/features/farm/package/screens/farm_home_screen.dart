@@ -4,7 +4,6 @@ import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/routes/app_routes.dart';
-import 'my_packages_screen.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../models/farm_package_model.dart';
@@ -123,54 +122,71 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        selectedIndex: _tabIndex,
-        onDestinationSelected: (i) => setState(() => _tabIndex = i),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkSurface
-            : Colors.white,
-        indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.15),
-        destinations: const [
-          NavigationDestination(
-            key: ValueKey('farm_nav_home'),
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(
-              Icons.home_rounded,
-              color: AppColors.primaryGreen,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
             ),
-            label: 'Beranda',
-          ),
-          NavigationDestination(
-            key: ValueKey('farm_nav_finance'),
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(
-              Icons.account_balance_wallet_rounded,
-              color: AppColors.primaryGreen,
+          ],
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+              width: 1,
             ),
-            label: 'Keuangan',
           ),
-          NavigationDestination(
-            key: ValueKey('farm_nav_sell'),
-            icon: Icon(Icons.sell_outlined),
-            selectedIcon: Icon(
-              Icons.sell_rounded,
-              color: AppColors.primaryGreen,
+        ),
+        child: NavigationBar(
+          height: 64,
+          elevation: 0,
+          selectedIndex: _tabIndex,
+          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.15),
+          destinations: const [
+            NavigationDestination(
+              key: ValueKey('farm_nav_home'),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(
+                Icons.home_rounded,
+                color: AppColors.primaryGreen,
+              ),
+              label: 'Beranda',
             ),
-            label: 'Jual Panen',
-          ),
-          NavigationDestination(
-            key: ValueKey('farm_nav_profile'),
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(
-              Icons.person_rounded,
-              color: AppColors.primaryGreen,
+            NavigationDestination(
+              key: ValueKey('farm_nav_finance'),
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              selectedIcon: Icon(
+                Icons.account_balance_wallet_rounded,
+                color: AppColors.primaryGreen,
+              ),
+              label: 'Keuangan',
             ),
-            label: 'Profil',
-          ),
-        ],
+            NavigationDestination(
+              key: ValueKey('farm_nav_sell'),
+              icon: Icon(Icons.sell_outlined),
+              selectedIcon: Icon(
+                Icons.sell_rounded,
+                color: AppColors.primaryGreen,
+              ),
+              label: 'Jual Panen',
+            ),
+            NavigationDestination(
+              key: ValueKey('farm_nav_profile'),
+              icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(
+                Icons.person_rounded,
+                color: AppColors.primaryGreen,
+              ),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }

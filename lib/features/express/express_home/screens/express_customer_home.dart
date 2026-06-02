@@ -67,63 +67,80 @@ class _ExpressCustomerHomeState extends State<ExpressCustomerHome> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        height: 64,
-        selectedIndex: _tabIndex,
-        onDestinationSelected: _onNavTap,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkSurface
-            : Colors.white,
-        indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.15),
-        destinations: const [
-          NavigationDestination(
-            key: ValueKey('nav_home'),
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(
-              Icons.home_rounded,
-              color: AppColors.secondaryOrange,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
             ),
-            label: 'Beranda',
-          ),
-          NavigationDestination(
-            key: ValueKey('nav_menu'),
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(
-              Icons.menu_book_rounded,
-              color: AppColors.secondaryOrange,
+          ],
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+              width: 1,
             ),
-            label: 'Katalog',
           ),
-          NavigationDestination(
-            key: ValueKey('nav_orders'),
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(
-              Icons.receipt_long_rounded,
-              color: AppColors.secondaryOrange,
+        ),
+        child: NavigationBar(
+          height: 64,
+          elevation: 0,
+          selectedIndex: _tabIndex,
+          onDestinationSelected: _onNavTap,
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.15),
+          destinations: const [
+            NavigationDestination(
+              key: ValueKey('nav_home'),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(
+                Icons.home_rounded,
+                color: AppColors.secondaryOrange,
+              ),
+              label: 'Beranda',
             ),
-            label: 'Pesanan',
-          ),
-          NavigationDestination(
-            key: ValueKey('nav_reservations'),
-            icon: Icon(Icons.table_restaurant_outlined),
-            selectedIcon: Icon(
-              Icons.table_restaurant_rounded,
-              color: AppColors.secondaryOrange,
+            NavigationDestination(
+              key: ValueKey('nav_menu'),
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(
+                Icons.menu_book_rounded,
+                color: AppColors.secondaryOrange,
+              ),
+              label: 'Katalog',
             ),
-            label: 'Reservasi',
-          ),
-          NavigationDestination(
-            key: ValueKey('nav_profile'),
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(
-              Icons.person_rounded,
-              color: AppColors.secondaryOrange,
+            NavigationDestination(
+              key: ValueKey('nav_orders'),
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon: Icon(
+                Icons.receipt_long_rounded,
+                color: AppColors.secondaryOrange,
+              ),
+              label: 'Pesanan',
             ),
-            label: 'Profil',
-          ),
-        ],
+            NavigationDestination(
+              key: ValueKey('nav_reservations'),
+              icon: Icon(Icons.table_restaurant_outlined),
+              selectedIcon: Icon(
+                Icons.table_restaurant_rounded,
+                color: AppColors.secondaryOrange,
+              ),
+              label: 'Reservasi',
+            ),
+            NavigationDestination(
+              key: ValueKey('nav_profile'),
+              icon: Icon(Icons.person_outline_rounded),
+              selectedIcon: Icon(
+                Icons.person_rounded,
+                color: AppColors.secondaryOrange,
+              ),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }

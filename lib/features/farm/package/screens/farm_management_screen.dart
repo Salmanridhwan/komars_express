@@ -41,9 +41,12 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading packages: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memuat paket: $e'),
+            backgroundColor: AppColors.statusCancelled,
+          ),
+        );
       }
     }
   }
@@ -55,14 +58,20 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
       await _loadPackages();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Package deleted successfully')),
+          const SnackBar(
+            content: Text('Paket berhasil dihapus'),
+            backgroundColor: AppColors.statusCancelled,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error deleting package: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menghapus paket: $e'),
+            backgroundColor: AppColors.statusCancelled,
+          ),
+        );
       }
     }
   }
@@ -71,19 +80,58 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Package'),
-        content: Text('Are you sure you want to delete "${package.title}"?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.deleteRed.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.deleteRed,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Hapus Paket?',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Paket "${package.title}" akan dihapus secara permanen.',
+          style: const TextStyle(
+            fontFamily: 'Outfit',
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _deletePackage(package.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: AppColors.deleteRed, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -94,8 +142,9 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final content = Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
         automaticallyImplyLeading: !widget.embedded,
         title: const Text(
@@ -140,13 +189,13 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No Farm Packages Yet',
-                    style: TextStyle(fontFamily: 'Outfit', fontSize: 18, fontWeight: FontWeight.w700, color: Colors.grey[800]),
+                    'Belum Ada Paket Investasi',
+                    style: TextStyle(fontFamily: 'Outfit', fontSize: 18, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkTextPrimary : Colors.grey[800]),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Click the button below to add one.',
-                    style: TextStyle(fontFamily: 'Outfit', color: Colors.grey[600]),
+                    'Tekan tombol + untuk menambahkan paket baru.',
+                    style: TextStyle(fontFamily: 'Outfit', color: isDark ? AppColors.darkTextSecondary : Colors.grey[600]),
                   ),
                 ],
               ),
