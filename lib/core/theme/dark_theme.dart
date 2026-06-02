@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
 ThemeData buildDarkTheme() {
-  const primary = AppColors.primaryGreenLight;
-  const secondary = AppColors.secondaryOrangeLight;
+  const primary = AppColors.secondaryOrangeLight;
+  const secondary = AppColors.secondaryOrange;
 
   return ThemeData(
     useMaterial3: true,
@@ -84,27 +84,31 @@ ThemeData buildDarkTheme() {
       style: ElevatedButton.styleFrom(
         backgroundColor: primary,
         foregroundColor: Colors.black,
-        minimumSize: const Size(double.infinity, 52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        minimumSize: const Size(double.infinity, 56),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 16,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
         ),
         elevation: 0,
+        splashFactory: InkRipple.splashFactory,
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: primary,
-        minimumSize: const Size(double.infinity, 52),
+        minimumSize: const Size(double.infinity, 56),
         side: const BorderSide(color: primary, width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
           fontFamily: 'Outfit',
           fontSize: 16,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
         ),
+        splashFactory: InkRipple.splashFactory,
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -123,7 +127,7 @@ ThemeData buildDarkTheme() {
         borderSide: const BorderSide(color: primary, width: 2),
       ),
       contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       hintStyle: const TextStyle(color: AppColors.darkTextHint),
     ),
     dividerTheme: const DividerThemeData(
@@ -139,8 +143,8 @@ ThemeData buildDarkTheme() {
       elevation: 8,
     ),
     snackBarTheme: const SnackBarThemeData(
-      backgroundColor: AppColors.primaryGreen,
-      actionTextColor: AppColors.secondaryOrange,
+      backgroundColor: AppColors.secondaryOrange,
+      actionTextColor: Colors.white,
       contentTextStyle: TextStyle(
         fontFamily: 'Outfit',
         color: Colors.white,
@@ -153,7 +157,7 @@ ThemeData buildDarkTheme() {
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: primary,
-      foregroundColor: Colors.black,
+      foregroundColor: Colors.white,
       shape: CircleBorder(),
     ),
   );

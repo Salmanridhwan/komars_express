@@ -1,11 +1,16 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/pref_keys.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../../core/database/database_helper.dart';
 import '../../auth/db/user_dao.dart';
 import '../../auth/models/user_model.dart';
+import '../../express/order/db/order_dao.dart';
+import '../../express/reservation/db/reservation_dao.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool embedded;
@@ -20,6 +25,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _selectedApp;
   bool _isLoading = true;
 
+  // Personal user stats
+  int _userOrdersCount = 0;
+  int _userReservationsCount = 0;
+  int _farmPackagesCount = 0;
+  double _totalInvestedAmount = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +44,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _selectedApp = prefs.getString(PrefKeys.selectedApp);
 
     if (token.isNotEmpty) {
-      final user = await UserDao().getById(int.tryParse(token) ?? 0);
+      final userId = int.tryParse(token) ?? 0;
+      final user = await UserDao().getById(userId);
+
+      // Load user statistics
+      try {
+        final orderHistory = await OrderDao().getHistory();
+        final userOrders = orderHistory.where((o) => o.userId == userId).toList();
+        _userOrdersCount = userOrders.length;
+      } catch (e) {
+        debugPrint('Error loading user orders count: $e');
+      }
+
+      try {
+        final userReservations = await ReservationDao().getByUser(userId);
+        _userReservationsCount = userReservations.length;
+      } catch (e) {
+        debugPrint('Error loading user reservations count: $e');
+      }
+
+      try {
+        final db = DatabaseHelper.instance;
+        final purchasedList = await db.purchasedPackageDao.getPurchasedByUserId(userId);
+        _farmPackagesCount = purchasedList.length;
+        _totalInvestedAmount = purchasedList.fold(0.0, (sum, p) => sum + p.price);
+      } catch (e) {
+        debugPrint('Error loading user farm packages count: $e');
+      }
+
       if (mounted) {
         setState(() {
           _user = user;
@@ -162,19 +200,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  ImageProvider? _getAvatarImage() {
+    final path = _user?.profileImage;
+    if (path == null || path.isEmpty) {
+      return null;
+    }
+    if (kIsWeb) {
+      return NetworkImage(path);
+    }
+    return FileImage(File(path));
+  }
+
+  String _getJoinedDate() {
+    final dateStr = _user?.createdAt;
+    if (dateStr == null) return '-';
+    if (dateStr.length >= 10) {
+      return dateStr.substring(0, 10);
+    }
+    return dateStr;
+  }
+
+  Widget _buildStatBox(String label, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkCard : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: const TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 10,
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isAdmin = _user?.isAdmin ?? false;
+    final user = _user;
+    final isAdmin = user?.isAdmin ?? false;
+    final hasAvatar = user?.profileImage?.isNotEmpty ?? false;
 
     return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: widget.embedded
           ? null
           : AppBar(
-              title: const Text('Profil Pengguna'),
+              title: const Text(
+                'Profil Pengguna',
+                style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
+              foregroundColor: Colors.white,
+              elevation: 0,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(Icons.edit_rounded),
                   onPressed: () async {
                     await Navigator.pushNamed(context, AppRoutes.editProfile);
                     _loadUserProfile();
@@ -183,48 +304,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.secondaryOrange))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Avatar Section
-                  Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 64,
-                          backgroundColor: isDark
-                              ? AppColors.darkCard
-                              : AppColors.primaryGreenSurface,
-                          backgroundImage:
-                              _user?.profileImage != null &&
-                                  _user!.profileImage!.isNotEmpty
-                              ? FileImage(File(_user!.profileImage!))
-                              : null,
-                          child:
-                              _user?.profileImage == null ||
-                                  _user!.profileImage!.isEmpty
-                              ? Icon(
-                                  Icons.person_rounded,
-                                  size: 64,
-                                  color: isDark
-                                      ? AppColors.primaryGreenLight
-                                      : AppColors.primaryGreen,
-                                )
-                              : null,
+                  // Beautiful Stack overlay for social-profile layout
+                  Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Header background banner
+                      Container(
+                        height: 140,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.expressGradient,
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
                         ),
-                      ],
-                    ),
+                      ),
+                      // Edit button for embedded screen
+                      if (widget.embedded)
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                              onPressed: () async {
+                                await Navigator.pushNamed(context, AppRoutes.editProfile);
+                                _loadUserProfile();
+                              },
+                            ),
+                          ),
+                        ),
+                      // Avatar positioned half-in, half-out
+                      Positioned(
+                        bottom: -44,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+                              width: 4,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: isDark ? AppColors.darkCard : AppColors.primaryGreenSurface,
+                            backgroundImage: _getAvatarImage(),
+                            child: !hasAvatar
+                                ? Icon(
+                                    Icons.person_rounded,
+                                    size: 50,
+                                    color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 56),
+
+                  // Name & Email
                   Text(
                     _user?.name ?? 'Sobat Komars',
                     style: const TextStyle(
                       fontFamily: 'Outfit',
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -232,184 +391,217 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _user?.email ?? 'email@komars.com',
                     style: TextStyle(
                       fontFamily: 'Outfit',
-                      fontSize: 14,
-                      color: isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary,
+                      fontSize: 13,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+
                   // Role Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
                       color: isAdmin
-                          ? AppColors.secondaryOrangeSurface
-                          : AppColors.primaryGreenSurface,
+                          ? AppColors.secondaryOrange.withOpacity(0.12)
+                          : AppColors.primaryGreen.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isAdmin
-                            ? AppColors.secondaryOrange.withValues(alpha: 0.4)
-                            : AppColors.primaryGreen.withValues(alpha: 0.4),
+                            ? AppColors.secondaryOrange.withOpacity(0.3)
+                            : AppColors.primaryGreen.withOpacity(0.3),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isAdmin
-                              ? Icons.admin_panel_settings_rounded
-                              : Icons.person_rounded,
+                          isAdmin ? Icons.admin_panel_settings_rounded : Icons.person_rounded,
                           size: 14,
-                          color: isAdmin
-                              ? AppColors.secondaryOrange
-                              : AppColors.primaryGreen,
+                          color: isAdmin ? AppColors.secondaryOrange : AppColors.primaryGreen,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           isAdmin ? 'Administrator' : 'Pelanggan',
                           style: TextStyle(
                             fontFamily: 'Outfit',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isAdmin
-                                ? AppColors.secondaryOrangeDark
-                                : AppColors.primaryGreenDark,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isAdmin ? AppColors.secondaryOrangeDark : AppColors.primaryGreenDark,
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  // Detail Information
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkDivider
-                            : AppColors.lightDivider,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        _ProfileInfoRow(
-                          icon: Icons.phone_android_rounded,
-                          label: 'No. Telepon',
-                          value:
-                              _user?.phoneNumber != null &&
-                                  _user!.phoneNumber!.isNotEmpty
-                              ? _user!.phoneNumber!
-                              : '-',
-                        ),
-                        _DividerLine(isDark: isDark),
-                        _ProfileInfoRow(
-                          icon: Icons.calendar_today_rounded,
-                          label: 'Bergabung Sejak',
-                          value: _user?.createdAt != null
-                              ? _user!.createdAt!.substring(0, 10)
-                              : '-',
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Menu Options
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkDivider
-                            : AppColors.lightDivider,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        _ProfileMenuRow(
-                          icon: Icons.settings_rounded,
-                          title: 'Pengaturan Aplikasi',
-                          color: AppColors.primaryGreen,
-                          onTap: () async {
-                            await Navigator.pushNamed(
-                              context,
-                              AppRoutes.settings,
-                            );
-                            _loadUserProfile();
-                          },
-                        ),
-                        if (_selectedApp != 'farm') ...[
-                          _DividerLine(isDark: isDark),
-                          _ProfileMenuRow(
-                            icon: Icons.history_edu_rounded,
-                            title: 'Riwayat Reservasi',
-                            color: AppColors.statusActive,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.reservationHistory,
-                              );
-                            },
-                          ),
-                        ],
-                        _DividerLine(isDark: isDark),
-                        _ProfileMenuRow(
-                          icon: Icons.receipt_long_rounded,
-                          title: 'Riwayat Transaksi',
-                          color: AppColors.secondaryOrange,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.orderHistory,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Logout Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.deleteRed.withValues(
-                          alpha: 0.1,
-                        ),
-                        foregroundColor: AppColors.deleteRed,
-                        elevation: 0,
-                        side: const BorderSide(
-                          color: AppColors.deleteRed,
-                          width: 1,
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: _logout,
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  // Stats Panel for Customer
+                  if (!isAdmin) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Row(
                         children: [
-                          Icon(Icons.logout_rounded),
-                          SizedBox(width: 8),
-                          Text(
-                            'Keluar dari Akun',
-                            style: TextStyle(
-                              fontFamily: 'Outfit',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                          _buildStatBox('Pesanan', '$_userOrdersCount', Icons.receipt_long_rounded, AppColors.secondaryOrange),
+                          const SizedBox(width: 10),
+                          _buildStatBox('Reservasi', '$_userReservationsCount', Icons.event_seat_rounded, AppColors.statusActive),
+                          const SizedBox(width: 10),
+                          _buildStatBox('Paket Tani', '$_farmPackagesCount', Icons.spa_rounded, AppColors.statusSuccess),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Personal Information Card
+                        const Text(
+                          'Informasi Personal',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurface : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
                             ),
                           ),
-                        ],
-                      ),
+                          child: Column(
+                            children: [
+                              _ProfileInfoRow(
+                                icon: Icons.phone_android_rounded,
+                                label: 'No. Telepon',
+                                value: (user?.phoneNumber?.isNotEmpty ?? false)
+                                    ? user!.phoneNumber!
+                                    : '-',
+                              ),
+                              _DividerLine(isDark: isDark),
+                              _ProfileInfoRow(
+                                icon: Icons.calendar_today_rounded,
+                                label: 'Tanggal Bergabung',
+                                value: _getJoinedDate(),
+                              ),
+                              if (!isAdmin && _farmPackagesCount > 0) ...[
+                                _DividerLine(isDark: isDark),
+                                _ProfileInfoRow(
+                                  icon: Icons.payments_rounded,
+                                  label: 'Total Modal Tani',
+                                  value: CurrencyFormatter.format(_totalInvestedAmount),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Menu Options
+                        const Text(
+                          'Pintasan Menu',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurface : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              _ProfileMenuRow(
+                                icon: Icons.settings_rounded,
+                                title: 'Pengaturan Aplikasi',
+                                color: AppColors.primaryGreen,
+                                onTap: () async {
+                                  await Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.settings,
+                                  );
+                                  _loadUserProfile();
+                                },
+                              ),
+                              if (_selectedApp != 'farm') ...[
+                                _DividerLine(isDark: isDark),
+                                _ProfileMenuRow(
+                                  icon: Icons.history_edu_rounded,
+                                  title: 'Riwayat Reservasi',
+                                  color: AppColors.statusActive,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.reservationHistory,
+                                    );
+                                  },
+                                ),
+                              ],
+                              _DividerLine(isDark: isDark),
+                              _ProfileMenuRow(
+                                icon: Icons.receipt_long_rounded,
+                                title: 'Riwayat Transaksi',
+                                color: AppColors.secondaryOrange,
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.orderHistory,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Logout Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.deleteRed.withValues(alpha: 0.08),
+                              foregroundColor: AppColors.deleteRed,
+                              elevation: 0,
+                              side: const BorderSide(
+                                color: AppColors.deleteRed,
+                                width: 1,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: _logout,
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.logout_rounded),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Keluar dari Akun',
+                                  style: TextStyle(
+                                    fontFamily: 'Outfit',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -439,10 +631,8 @@ class _ProfileInfoRow extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isDark
-                ? AppColors.primaryGreenLight
-                : AppColors.primaryGreen,
-            size: 24,
+            color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreen,
+            size: 22,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -450,10 +640,8 @@ class _ProfileInfoRow extends StatelessWidget {
               label,
               style: TextStyle(
                 fontFamily: 'Outfit',
-                fontSize: 15,
-                color: isDark
-                    ? AppColors.darkTextSecondary
-                    : AppColors.lightTextSecondary,
+                fontSize: 14,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
               ),
             ),
           ),
@@ -461,8 +649,8 @@ class _ProfileInfoRow extends StatelessWidget {
             value,
             style: const TextStyle(
               fontFamily: 'Outfit',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -499,11 +687,11 @@ class _ProfileMenuRow extends StatelessWidget {
         title,
         style: const TextStyle(
           fontFamily: 'Outfit',
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       onTap: onTap,
     );
   }

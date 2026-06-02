@@ -62,29 +62,290 @@ class _TableManagementScreenState extends State<TableManagementScreen>
   }
 
 
-  Future<void> _deactivate(TableModel table) async {
+  Future<void> _toggleActive(TableModel table) async {
+    final newStatus = !table.isActive;
+    final title = newStatus ? 'Aktifkan Meja?' : 'Nonaktifkan Meja?';
+    final content = newStatus
+        ? 'Meja ${table.tableNumber} akan diaktifkan kembali dan muncul di denah lantai.'
+        : 'Meja ${table.tableNumber} akan dinonaktifkan dari denah. Data historis tetap tersimpan.';
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Nonaktifkan Meja?'),
-        content: Text(
-            'Meja ${table.tableNumber} akan dinonaktifkan dari denah. Data historis tetap tersimpan.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title, style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold)),
+        content: Text(content, style: const TextStyle(fontFamily: 'Outfit')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Outfit')),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.deleteRed, foregroundColor: Colors.white),
+              backgroundColor: newStatus ? AppColors.statusSuccess : AppColors.deleteRed,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Nonaktifkan'),
+            child: Text(newStatus ? 'Aktifkan' : 'Nonaktifkan', style: const TextStyle(fontFamily: 'Outfit')),
           ),
         ],
       ),
     );
     if (confirm == true) {
-      await _dao.deactivate(table.id!);
+      final updated = TableModel(
+        id: table.id,
+        tableNumber: table.tableNumber,
+        capacity: table.capacity,
+        location: table.location,
+        isActive: newStatus,
+      );
+      await _dao.update(updated);
       _load();
     }
+  }
+
+  void _showTableActions(TableModel table) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryOrange.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.table_restaurant_rounded,
+                        color: AppColors.secondaryOrange,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meja ${table.tableNumber}',
+                          style: const TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          'Lokasi: ${table.location} • ${table.capacity} Kursi',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 12,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const Icon(Icons.edit_rounded, color: AppColors.secondaryOrange),
+                  title: const Text(
+                    'Edit Detail Meja',
+                    style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAddEdit(table);
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: Icon(
+                    table.isActive ? Icons.remove_circle_outline_rounded : Icons.check_circle_outline_rounded,
+                    color: table.isActive ? AppColors.deleteRed : AppColors.statusSuccess,
+                  ),
+                  title: Text(
+                    table.isActive ? 'Nonaktifkan Meja' : 'Aktifkan Meja',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontWeight: FontWeight.w600,
+                      color: table.isActive ? AppColors.deleteRed : AppColors.statusSuccess,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _toggleActive(table);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSummaryPanel() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final total = _tables.length;
+    final active = _tables.where((t) => t.isActive).length;
+    final inactive = total - active;
+
+    final vip = _tables.where((t) => t.location == 'VIP').length;
+    final indoor = _tables.where((t) => t.location == 'Indoor').length;
+    final outdoor = _tables.where((t) => t.location == 'Outdoor').length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Ringkasan Status Meja',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryOrange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$total Total Meja',
+                  style: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.secondaryOrange,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildSummaryItem(
+                label: 'Aktif',
+                value: '$active',
+                color: AppColors.statusSuccess,
+                icon: Icons.check_circle_outline_rounded,
+              ),
+              _buildDivider(),
+              _buildSummaryItem(
+                label: 'Nonaktif',
+                value: '$inactive',
+                color: Colors.grey,
+                icon: Icons.remove_circle_outline_rounded,
+              ),
+              _buildDivider(),
+              _buildSummaryItem(
+                label: 'VIP',
+                value: '$vip',
+                color: const Color(0xFF7B1FA2),
+                icon: Icons.star_rounded,
+              ),
+              _buildDivider(),
+              _buildSummaryItem(
+                label: 'Indoor',
+                value: '$indoor',
+                color: AppColors.secondaryOrange,
+                icon: Icons.chair_rounded,
+              ),
+              _buildDivider(),
+              _buildSummaryItem(
+                label: 'Outdoor',
+                value: '$outdoor',
+                color: Colors.green,
+                icon: Icons.park_rounded,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 24,
+      width: 1,
+      color: Colors.grey.withValues(alpha: 0.2),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+    );
+  }
+
+  Widget _buildSummaryItem({
+    required String label,
+    required String value,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Outfit',
+              fontSize: 9,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -106,6 +367,8 @@ class _TableManagementScreenState extends State<TableManagementScreen>
         ),
         backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _load),
@@ -138,18 +401,24 @@ class _TableManagementScreenState extends State<TableManagementScreen>
                     ? const Center(
                         child: Text('Belum ada meja',
                             style: TextStyle(fontFamily: 'Outfit', color: Colors.grey)))
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                        itemCount: _tables.length,
-                        itemBuilder: (ctx, i) {
-                          final t = _tables[i];
-                          return _TableListCard(
-                            table: t,
-                            isDark: isDark,
-                            onEdit: () => _showAddEdit(t),
-                            onDeactivate: t.isActive ? () => _deactivate(t) : null,
-                          );
-                        },
+                    : Column(
+                        children: [
+                          _buildSummaryPanel(),
+                          Expanded(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                              itemCount: _tables.length,
+                              itemBuilder: (ctx, i) {
+                                final t = _tables[i];
+                                return _TableListCard(
+                                  table: t,
+                                  isDark: isDark,
+                                  onMoreTap: () => _showTableActions(t),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                 // ─── Tab 2: Floor Map (Custom Widget) ────────────────────────
                 SingleChildScrollView(
@@ -160,7 +429,8 @@ class _TableManagementScreenState extends State<TableManagementScreen>
                           tables: activeTables,
                           reservedTableIds: const {},
                           selectedTableId: null,
-                          onTableSelected: (t) => _showAddEdit(t),
+                          showLegend: false,
+                          onTableSelected: (t) => _showTableActions(t),
                         ),
                 ),
               ],
@@ -172,85 +442,166 @@ class _TableManagementScreenState extends State<TableManagementScreen>
 class _TableListCard extends StatelessWidget {
   final TableModel table;
   final bool isDark;
-  final VoidCallback onEdit;
-  final VoidCallback? onDeactivate;
+  final VoidCallback onMoreTap;
 
   const _TableListCard({
     required this.table,
     required this.isDark,
-    required this.onEdit,
-    this.onDeactivate,
+    required this.onMoreTap,
   });
 
   Color _locationColor(String loc) {
     switch (loc) {
       case 'VIP': return const Color(0xFF7B1FA2);
-      case 'Outdoor': return AppColors.secondaryOrangeDark;
+      case 'Outdoor': return Colors.green;
       default: return AppColors.secondaryOrange; // Indoor
+    }
+  }
+
+  IconData _locationIcon(String loc) {
+    switch (loc) {
+      case 'VIP': return Icons.star_rounded;
+      case 'Outdoor': return Icons.park_rounded;
+      default: return Icons.chair_rounded;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final loc = _locationColor(table.location);
+    final locColor = _locationColor(table.location);
+    final locIcon = _locationIcon(table.location);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? AppColors.darkDivider : AppColors.lightDivider),
-        boxShadow: [if (!isDark)
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: Container(
-          width: 46, height: 46,
-          decoration: BoxDecoration(
-              color: table.isActive ? loc.withValues(alpha: 0.12) : Colors.grey.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12)),
-          child: Icon(Icons.table_restaurant_rounded,
-              color: table.isActive ? loc : Colors.grey, size: 22),
+        border: Border.all(
+          color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
         ),
-        title: Row(children: [
-          Text(table.tableNumber,
-              style: const TextStyle(fontFamily: 'Outfit', fontSize: 15, fontWeight: FontWeight.w700)),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-                color: loc.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-            child: Text(table.location,
-                style: TextStyle(fontFamily: 'Outfit', fontSize: 10, fontWeight: FontWeight.w700, color: loc)),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: table.isActive ? locColor : Colors.grey,
+                width: 5,
+              ),
+            ),
           ),
-          if (!table.isActive) ...[
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: ListTile(
+            contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+            leading: Container(
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-              child: const Text('Nonaktif',
-                  style: TextStyle(fontFamily: 'Outfit', fontSize: 10, fontWeight: FontWeight.w700, color: Colors.grey)),
+                color: table.isActive
+                    ? locColor.withValues(alpha: 0.1)
+                    : Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                locIcon,
+                color: table.isActive ? locColor : Colors.grey,
+                size: 24,
+              ),
             ),
-          ],
-        ]),
-        subtitle: Text('${table.capacity} kursi',
-            style: const TextStyle(fontFamily: 'Outfit', fontSize: 12, color: Colors.grey)),
-        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          IconButton(
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            color: AppColors.secondaryOrange,
-            onPressed: onEdit,
-            tooltip: 'Edit',
+            title: Row(
+              children: [
+                Text(
+                  table.tableNumber,
+                  style: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: table.isActive
+                        ? locColor.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    table.location,
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: table.isActive ? locColor : Colors.grey,
+                    ),
+                  ),
+                ),
+                if (!table.isActive) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Nonaktif',
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.people_alt_rounded,
+                    size: 14,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${table.capacity} kursi',
+                    style: TextStyle(
+                      fontFamily: 'Outfit',
+                      fontSize: 12,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            trailing: Container(
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              child: IconButton(
+                icon: const Icon(Icons.more_vert_rounded),
+                onPressed: onMoreTap,
+                tooltip: 'Aksi Meja',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashRadius: 24,
+              ),
+            ),
           ),
-          if (onDeactivate != null)
-            IconButton(
-              icon: const Icon(Icons.remove_circle_outline_rounded, size: 18),
-              color: AppColors.deleteRed,
-              onPressed: onDeactivate,
-              tooltip: 'Nonaktifkan',
-            ),
-        ]),
+        ),
       ),
     );
   }

@@ -290,6 +290,8 @@ class _FarmPackageFormScreenState extends State<FarmPackageFormScreen> {
         ),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: Form(
@@ -311,46 +313,89 @@ class _FarmPackageFormScreenState extends State<FarmPackageFormScreen> {
                 prefixIcon: Icons.description_rounded,
                 maxLines: 3,
               ),
-              _buildTextFormField(
-                controller: _farmTypeController,
-                labelText: 'Tipe Peternakan (e.g. ayam, sapi)',
-                prefixIcon: Icons.agriculture_rounded,
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  'Kategori Usaha Tani',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
-
-              // Preset chips for farm type
               Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 20),
-                child: Wrap(
-                  spacing: 8,
-                  children: _presetFarmTypes.map((type) {
+                padding: const EdgeInsets.only(bottom: 24),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 2.6,
+                  ),
+                  itemCount: _presetFarmTypes.length,
+                  itemBuilder: (context, i) {
+                    final type = _presetFarmTypes[i];
                     final isSelected =
                         _farmTypeController.text.trim().toLowerCase() == type;
-                    return ChoiceChip(
-                      label: Text(
-                        type.toUpperCase(),
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
+
+                    String label;
+                    Color color;
+
+                    switch (type) {
+                      case 'unggas':
+                        label = '🐔 Unggas';
+                        color = Colors.orange;
+                        break;
+                      case 'ikan':
+                        label = '🐟 Ikan';
+                        color = Colors.blue;
+                        break;
+                      case 'sayur':
+                        label = '🥬 Sayur';
+                        color = Colors.green;
+                        break;
+                      default:
+                        label = '🌾 Campuran';
+                        color = Colors.brown;
+                    }
+
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _farmTypeController.text = type;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.white
-                              : AppColors.primaryGreen,
+                              ? color.withValues(alpha: 0.12)
+                              : (isDark ? AppColors.darkCard : Colors.white),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? color : (isDark ? AppColors.darkDivider : Colors.grey.shade300),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: isSelected ? color : (isDark ? Colors.white70 : Colors.grey.shade700),
+                          ),
                         ),
                       ),
-                      selected: isSelected,
-                      selectedColor: AppColors.primaryGreen,
-                      backgroundColor: AppColors.primaryGreen.withValues(
-                        alpha: 0.1,
-                      ),
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() {
-                            _farmTypeController.text = type;
-                          });
-                        }
-                      },
                     );
-                  }).toList(),
+                  },
                 ),
               ),
 

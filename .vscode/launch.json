@@ -8,7 +8,7 @@
       "deviceId": "chrome",
       "args": [
         "--web-port",
-        "8080"
+        "8000"
       ]
     },
     {
@@ -18,7 +18,7 @@
       "deviceId": "web-server",
       "args": [
         "--web-port",
-        "8080"
+        "8000"
       ]
     },
     {
@@ -27,7 +27,7 @@
       "type": "dart",
       "args": [
         "--web-port",
-        "8080"
+        "8000"
       ]
     }
   ]

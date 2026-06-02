@@ -121,6 +121,7 @@ class _FarmPaymentScreenState extends State<FarmPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -129,11 +130,31 @@ class _FarmPaymentScreenState extends State<FarmPaymentScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Pembayaran',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.payments_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Pembayaran',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -181,7 +202,7 @@ class _FarmPaymentScreenState extends State<FarmPaymentScreen> {
                           style: TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 12,
-                            color: Colors.grey.shade600,
+                            color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade600,
                             letterSpacing: 1,
                           ),
                         ),
@@ -224,17 +245,23 @@ class _FarmPaymentScreenState extends State<FarmPaymentScreen> {
                       vertical: 16,
                     ),
                     decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkCard : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: _selectedMethod == method['name']
                             ? AppColors.primaryGreen
-                            : Colors.grey.shade300,
+                            : (isDark ? AppColors.darkDivider : Colors.grey.shade300),
                         width: _selectedMethod == method['name'] ? 2 : 1,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Icon(method['icon'], color: Colors.grey.shade700),
+                        Icon(
+                          method['icon'],
+                          color: _selectedMethod == method['name']
+                              ? AppColors.primaryGreen
+                              : (isDark ? AppColors.darkTextSecondary : Colors.grey.shade700),
+                        ),
                         const SizedBox(width: 16),
                         Text(
                           method['name'],

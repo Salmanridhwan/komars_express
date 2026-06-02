@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/pref_keys.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/komars_navbar.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../order/screens/order_history_screen.dart';
@@ -67,80 +68,38 @@ class _ExpressCustomerHomeState extends State<ExpressCustomerHome> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
-              width: 1,
-            ),
+      bottomNavigationBar: KomarsNavBar(
+        selectedIndex: _tabIndex,
+        onTap: _onNavTap,
+        items: const [
+          KomarsNavItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home_rounded,
+            label: 'Beranda',
           ),
-        ),
-        child: NavigationBar(
-          height: 64,
-          elevation: 0,
-          selectedIndex: _tabIndex,
-          onDestinationSelected: _onNavTap,
-          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-          indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.15),
-          destinations: const [
-            NavigationDestination(
-              key: ValueKey('nav_home'),
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(
-                Icons.home_rounded,
-                color: AppColors.secondaryOrange,
-              ),
-              label: 'Beranda',
-            ),
-            NavigationDestination(
-              key: ValueKey('nav_menu'),
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(
-                Icons.menu_book_rounded,
-                color: AppColors.secondaryOrange,
-              ),
-              label: 'Katalog',
-            ),
-            NavigationDestination(
-              key: ValueKey('nav_orders'),
-              icon: Icon(Icons.receipt_long_outlined),
-              selectedIcon: Icon(
-                Icons.receipt_long_rounded,
-                color: AppColors.secondaryOrange,
-              ),
-              label: 'Pesanan',
-            ),
-            NavigationDestination(
-              key: ValueKey('nav_reservations'),
-              icon: Icon(Icons.table_restaurant_outlined),
-              selectedIcon: Icon(
-                Icons.table_restaurant_rounded,
-                color: AppColors.secondaryOrange,
-              ),
-              label: 'Reservasi',
-            ),
-            NavigationDestination(
-              key: ValueKey('nav_profile'),
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(
-                Icons.person_rounded,
-                color: AppColors.secondaryOrange,
-              ),
-              label: 'Profil',
-            ),
-          ],
-        ),
+          KomarsNavItem(
+            icon: Icons.menu_book_outlined,
+            activeIcon: Icons.menu_book_rounded,
+            label: 'Katalog',
+          ),
+          KomarsNavItem(
+            icon: Icons.receipt_long_outlined,
+            activeIcon: Icons.receipt_long_rounded,
+            label: 'Pesanan',
+          ),
+          KomarsNavItem(
+            icon: Icons.table_restaurant_outlined,
+            activeIcon: Icons.table_restaurant_rounded,
+            label: 'Reservasi',
+          ),
+          KomarsNavItem(
+            icon: Icons.person_outline_rounded,
+            activeIcon: Icons.person_rounded,
+            label: 'Profil',
+          ),
+        ],
       ),
     );
   }
@@ -484,6 +443,120 @@ class _ExpressBeranda extends StatelessWidget {
             ),
 
             const SizedBox(height: 40),
+
+            // ── Layanan Lainnya (Farm Entry) ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Layanan Lainnya',
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ── Komars Farm Card ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: GestureDetector(
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.farmCustomerHome),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFBF360C), Color(0xFFE64A19)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFBF360C).withValues(alpha: 0.35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Icon container
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.agriculture_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Text info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'Sub-Aplikasi · Agribisnis',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Komars Farm',
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              'Platform Mitra Pertanian & Panen',
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
           ],
         ),
       ),

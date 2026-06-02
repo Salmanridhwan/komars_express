@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -130,7 +131,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   : AppColors.primaryGreenSurface,
                               backgroundImage: _imagePath != null &&
                                       _imagePath!.isNotEmpty
-                                  ? FileImage(File(_imagePath!))
+                                  ? (kIsWeb
+                                      ? NetworkImage(_imagePath!) as ImageProvider
+                                      : FileImage(File(_imagePath!)))
                                   : null,
                               child: _imagePath == null || _imagePath!.isEmpty
                                   ? Icon(

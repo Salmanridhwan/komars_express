@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/pref_keys.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/komars_button.dart';
 import '../models/farm_package_model.dart';
 
 class FarmPackageDetailScreen extends StatefulWidget {
@@ -89,12 +90,30 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text(
-          'Detail Paket',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w700),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.spa_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Detail Paket Tani',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -381,32 +400,10 @@ class _FarmPackageDetailScreenState extends State<FarmPackageDetailScreen> {
                   ),
                 ),
               ),
-              child: ElevatedButton(
+              child: KomarsPrimaryButton(
+                label: 'Beli Paket Starter Kit',
+                icon: Icons.shopping_bag_rounded,
                 onPressed: _navToPayment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 54),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.shopping_bag_rounded, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Beli Paket Starter Kit',
-                      style: TextStyle(
-                        fontFamily: 'Outfit',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
     );

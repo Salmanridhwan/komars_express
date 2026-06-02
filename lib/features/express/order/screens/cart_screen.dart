@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -151,10 +152,19 @@ class _CartScreenState extends State<CartScreen> {
                                     color: Colors.grey[300],
                                     child: menu.imagePath != null &&
                                             menu.imagePath!.isNotEmpty
-                                        ? Image.file(
-                                            File(menu.imagePath!),
-                                            fit: BoxFit.cover,
-                                          )
+                                        ? (kIsWeb || menu.imagePath!.startsWith('http')
+                                            ? Image.network(
+                                                menu.imagePath!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) =>
+                                                    const Icon(Icons.broken_image_rounded),
+                                              )
+                                            : Image.file(
+                                                File(menu.imagePath!),
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) =>
+                                                    const Icon(Icons.broken_image_rounded),
+                                              ))
                                         : Icon(
                                             menu.category.toLowerCase() == 'drink'
                                                 ? Icons.local_drink_rounded
@@ -217,21 +227,21 @@ class _CartScreenState extends State<CartScreen> {
                                             _refresh();
                                           },
                                           child: Container(
-                                            padding: const EdgeInsets.all(4),
+                                            padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
                                               color: Colors.grey[300]?.withValues(alpha: 0.5),
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(Icons.remove, size: 16),
+                                            child: const Icon(Icons.remove, size: 20),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          padding: const EdgeInsets.symmetric(horizontal: 16),
                                           child: Text(
                                             '${item.quantity}',
                                             style: const TextStyle(
                                               fontFamily: 'Outfit',
-                                              fontSize: 14,
+                                              fontSize: 16,
                                               fontWeight: FontWeight.w800,
                                             ),
                                           ),
@@ -242,12 +252,12 @@ class _CartScreenState extends State<CartScreen> {
                                             _refresh();
                                           },
                                           child: Container(
-                                            padding: const EdgeInsets.all(4),
+                                            padding: const EdgeInsets.all(10),
                                             decoration: const BoxDecoration(
                                               color: AppColors.primaryGreen,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(Icons.add, size: 16, color: Colors.white),
+                                            child: const Icon(Icons.add, size: 20, color: Colors.white),
                                           ),
                                         ),
                                       ],

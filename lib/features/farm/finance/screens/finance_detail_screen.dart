@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:komars_express/core/database/database_helper.dart';
+import 'package:komars_express/core/constants/app_colors.dart';
 import '../models/financial_record_model.dart';
 
 class FinanceDetailScreen extends StatefulWidget {
@@ -115,12 +116,36 @@ class _FinanceDetailScreenState extends State<FinanceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isProfit = widget.record.netProfit >= 0;
     final profitColor = isProfit ? Colors.green : Colors.red;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Financial Record Detail'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.analytics_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Detail Catatan Keuangan',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         actions: [
           if (!_isEditing)
@@ -146,11 +171,7 @@ class _FinanceDetailScreenState extends State<FinanceDetailScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.blue.shade400, Colors.blue.shade700],
-                        ),
+                        gradient: AppColors.primaryGradient,
                       ),
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -365,9 +386,9 @@ class _FinanceDetailScreenState extends State<FinanceDetailScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: isDark ? AppColors.darkCard : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
                         ),
                         child: Text(
                           widget.record.notes!,
@@ -419,6 +440,7 @@ class _DetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -435,7 +457,7 @@ class _DetailCard extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey.shade600,
+                  color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
               ),

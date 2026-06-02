@@ -4,14 +4,13 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/pref_keys.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/widgets/komars_navbar.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../menu/db/menu_dao.dart';
 import '../../order/db/order_dao.dart';
 import '../../reservation/db/reservation_dao.dart';
 import '../../table/db/table_dao.dart';
-import '../../menu/screens/menu_management_screen.dart';
-import '../../table/screens/table_management_screen.dart';
 import '../../order/screens/order_history_screen.dart';
 import '../../reservation/screens/reservation_history_screen.dart';
 import '../../harvest/screens/express_harvest_inbox_screen.dart';
@@ -50,14 +49,10 @@ class _ExpressAdminDashboardState extends State<ExpressAdminDashboard> {
       case 0:
         return _AdminDashboardTab(admin: _admin);
       case 1:
-        return const MenuManagementScreen(embedded: true);
-      case 2:
-        return const TableManagementScreen(embedded: true);
-      case 3:
         return const OrderHistoryScreen(embedded: true);
-      case 4:
+      case 2:
         return const ReservationHistoryScreen(embedded: true);
-      case 5:
+      case 3:
         return const ExpressHarvestInboxScreen(embedded: true);
       default:
         return _AdminDashboardTab(admin: _admin);
@@ -66,78 +61,33 @@ class _ExpressAdminDashboardState extends State<ExpressAdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
-              width: 1,
-            ),
+      bottomNavigationBar: KomarsNavBar(
+        selectedIndex: _tabIndex,
+        onTap: _onNavTap,
+        items: const [
+          KomarsNavItem(
+            icon: Icons.dashboard_outlined,
+            activeIcon: Icons.dashboard_rounded,
+            label: 'Dashboard',
           ),
-        ),
-        child: NavigationBar(
-          height: 64,
-          elevation: 0,
-          selectedIndex: _tabIndex,
-          onDestinationSelected: _onNavTap,
-          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-          indicatorColor: AppColors.secondaryOrange.withValues(alpha: 0.18),
-          destinations: const [
-            NavigationDestination(
-              key: ValueKey('admin_nav_dashboard'),
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon: Icon(Icons.dashboard_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              key: ValueKey('admin_nav_menu'),
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Menu',
-            ),
-            NavigationDestination(
-              key: ValueKey('admin_nav_table'),
-              icon: Icon(Icons.table_restaurant_outlined),
-              selectedIcon: Icon(Icons.table_restaurant_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Meja',
-            ),
-            NavigationDestination(
-              key: ValueKey('admin_nav_orders'),
-              icon: Icon(Icons.receipt_long_outlined),
-              selectedIcon: Icon(Icons.receipt_long_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Pesanan',
-            ),
-            NavigationDestination(
-              key: ValueKey('admin_nav_reservation'),
-              icon: Icon(Icons.event_seat_outlined),
-              selectedIcon: Icon(Icons.event_seat_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Reservasi',
-            ),
-            NavigationDestination(
-              key: ValueKey('admin_nav_harvest'),
-              icon: Icon(Icons.agriculture_outlined),
-              selectedIcon: Icon(Icons.agriculture_rounded,
-                  color: AppColors.secondaryOrange),
-              label: 'Panen',
-            ),
-          ],
-        ),
+          KomarsNavItem(
+            icon: Icons.receipt_long_outlined,
+            activeIcon: Icons.receipt_long_rounded,
+            label: 'Pesanan',
+          ),
+          KomarsNavItem(
+            icon: Icons.event_seat_outlined,
+            activeIcon: Icons.event_seat_rounded,
+            label: 'Reservasi',
+          ),
+          KomarsNavItem(
+            icon: Icons.agriculture_outlined,
+            activeIcon: Icons.agriculture_rounded,
+            label: 'Panen',
+          ),
+        ],
       ),
     );
   }
@@ -320,6 +270,8 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
         automaticallyImplyLeading: false,
         backgroundColor: AppColors.secondaryOrange,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         title: Row(
           children: [
@@ -524,15 +476,134 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       onTap: () => Navigator.pushNamed(
                           context, AppRoutes.reservationHistory),
                     ),
-                    const SizedBox(height: 10),
-                    _AdminQuickAction(
-                      icon: Icons.person_rounded,
-                      title: 'Profil Admin',
-                      subtitle: widget.admin?.email ?? '',
-                      color: AppColors.secondaryOrange,
-                      onTap: () =>
-                          Navigator.pushNamed(context, AppRoutes.profile),
+
+                    const SizedBox(height: 32),
+
+                    // ── Komars Farm Admin Section ────────────────────────────
+                    Text(
+                      'Kelola Komars Farm',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
+                    const SizedBox(height: 12),
+
+                    // Farm Admin Entry Card
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(
+                          context, AppRoutes.farmAdminDashboard),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  AppColors.primaryGreen.withValues(alpha: 0.25),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.agriculture_rounded,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Text(
+                                      'Panel Admin',
+                                      style: TextStyle(
+                                        fontFamily: 'Outfit',
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  const Text(
+                                    'Komars Farm',
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Kelola paket, mitra & laporan panen',
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 12,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Farm sub-actions row
+                    Row(
+                      children: [
+                        _FarmAdminTile(
+                          icon: Icons.inventory_2_rounded,
+                          label: 'Kelola\nPaket',
+                          onTap: () => Navigator.pushNamed(
+                              context, AppRoutes.farmManagement),
+                        ),
+                        const SizedBox(width: 10),
+                        _FarmAdminTile(
+                          icon: Icons.people_alt_rounded,
+                          label: 'Kelola\nMitra',
+                          onTap: () => Navigator.pushNamed(
+                              context, AppRoutes.farmMitraAdmin),
+                        ),
+                        const SizedBox(width: 10),
+                        _FarmAdminTile(
+                          icon: Icons.agriculture_rounded,
+                          label: 'Inbox\nPanen',
+                          onTap: () => Navigator.pushNamed(
+                              context, AppRoutes.expressHarvestInbox),
+                        ),
+                      ],
+                    ),
+
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -541,6 +612,7 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
     );
   }
 }
+
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
@@ -664,3 +736,61 @@ class _AdminQuickAction extends StatelessWidget {
     );
   }
 }
+
+// ── Farm Admin Shortcut Tile ───────────────────────────────────────────────────
+
+class _FarmAdminTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _FarmAdminTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.darkCard
+                : AppColors.primaryGreenSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.darkDivider
+                  : AppColors.primaryGreen.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: AppColors.primaryGreen, size: 24),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Outfit',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.primaryGreenLight
+                      : AppColors.primaryGreenDark,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

@@ -68,6 +68,8 @@ class _ExpressHarvestInboxScreenState
         ),
         backgroundColor: AppColors.secondaryOrange,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
           IconButton(

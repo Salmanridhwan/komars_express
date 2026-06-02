@@ -4,6 +4,7 @@ import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/routes/app_routes.dart';
+import 'package:komars_express/core/widgets/komars_navbar.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../../../home/screens/profile_screen.dart';
@@ -45,8 +46,6 @@ class _FarmAdminDashboardState extends State<FarmAdminDashboard> {
         return const FarmManagementScreen(embedded: true);
       case 2:
         return const FarmMitraAdminScreen(embedded: true);
-      case 3:
-        return const ProfileScreen(embedded: true);
       default:
         return _AdminDashboardTab(admin: _admin);
     }
@@ -54,61 +53,30 @@ class _FarmAdminDashboardState extends State<FarmAdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
-              width: 1,
-            ),
+      bottomNavigationBar: KomarsNavBar(
+        selectedIndex: _tabIndex,
+        onTap: _onNavTap,
+        colorStart: AppColors.secondaryOrange,
+        colorEnd: AppColors.secondaryOrangeLight,
+        items: const [
+          KomarsNavItem(
+            icon: Icons.dashboard_outlined,
+            activeIcon: Icons.dashboard_rounded,
+            label: 'Dashboard',
           ),
-        ),
-        child: NavigationBar(
-          height: 64,
-          elevation: 0,
-          selectedIndex: _tabIndex,
-          onDestinationSelected: _onNavTap,
-          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-          indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.18),
-          destinations: const [
-            NavigationDestination(
-              key: ValueKey('farm_admin_nav_dashboard'),
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon:
-                  Icon(Icons.dashboard_rounded, color: AppColors.primaryGreen),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_admin_nav_package'),
-              icon: Icon(Icons.spa_outlined),
-              selectedIcon: Icon(Icons.spa_rounded, color: AppColors.primaryGreen),
-              label: 'Manajemen',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_admin_nav_mitra'),
-              icon: Icon(Icons.handshake_outlined),
-              selectedIcon: Icon(Icons.handshake_rounded, color: AppColors.primaryGreen),
-              label: 'Mitra',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_admin_nav_profile'),
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded, color: AppColors.primaryGreen),
-              label: 'Profil',
-            ),
-          ],
-        ),
+          KomarsNavItem(
+            icon: Icons.spa_outlined,
+            activeIcon: Icons.spa_rounded,
+            label: 'Manajemen',
+          ),
+          KomarsNavItem(
+            icon: Icons.handshake_outlined,
+            activeIcon: Icons.handshake_rounded,
+            label: 'Mitra',
+          ),
+        ],
       ),
     );
   }
@@ -273,7 +241,19 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, AppRoutes.expressAdminDashboard);
+            }
+          },
+          tooltip: 'Kembali ke Komars Express',
+        ),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -445,15 +425,6 @@ class _AdminDashboardTabState extends State<_AdminDashboardTab> {
                       color: AppColors.primaryGreen,
                       onTap: () => Navigator.pushNamed(
                           context, AppRoutes.farmMitraAdmin),
-                    ),
-                    const SizedBox(height: 10),
-                    _AdminQuickAction(
-                      icon: Icons.person_rounded,
-                      title: 'Profil Admin',
-                      subtitle: widget.admin?.email ?? '',
-                      color: AppColors.primaryGreen,
-                      onTap: () =>
-                          Navigator.pushNamed(context, AppRoutes.profile),
                     ),
                     const SizedBox(height: 32),
                   ],

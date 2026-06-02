@@ -35,11 +35,31 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Paket Saya',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.inventory_2_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Paket Investasi Saya',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
+        elevation: 0,
       ),
       body: _purchasedList == null
           ? const Center(child: CircularProgressIndicator())
@@ -110,19 +130,21 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
     final date = DateTime.parse(item.purchaseDate);
     final formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(date);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: isDark ? AppColors.darkDivider : Colors.grey.shade200),
       ),
       child: InkWell(
         onTap: () {
@@ -176,7 +198,7 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
                           style: TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 12,
-                            color: Colors.grey.shade600,
+                            color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade600,
                           ),
                         ),
                       ],
@@ -188,13 +210,13 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade50,
+                      color: isDark ? Colors.green.withOpacity(0.15) : Colors.green.shade50,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       'Aktif',
                       style: TextStyle(
-                        color: Colors.green.shade700,
+                        color: isDark ? Colors.green.shade400 : Colors.green.shade700,
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
                       ),
@@ -202,9 +224,12 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
                   ),
                 ],
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Divider(
+                  height: 1,
+                  color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -216,7 +241,7 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
                         'Metode Pembayaran',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey.shade500,
+                          color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade500,
                         ),
                       ),
                       Text(
@@ -235,7 +260,7 @@ class _MyPackagesScreenState extends State<MyPackagesScreen> {
                         'Harga Beli',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey.shade500,
+                          color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade500,
                         ),
                       ),
                       Text(

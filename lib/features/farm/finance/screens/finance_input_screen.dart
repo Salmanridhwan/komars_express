@@ -111,14 +111,34 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Input Catatan Keuangan',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.add_chart_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Tambah Catatan',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
         elevation: 0,
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -182,7 +202,7 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -243,10 +263,14 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
               controller: _notesController,
               decoration: InputDecoration(
                 hintText: 'Misal: Penjualan panen tomat atau biaya pakan...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                hintStyle: TextStyle(color: isDark ? AppColors.darkTextHint : Colors.grey.shade400, fontSize: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -294,6 +318,7 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
     required IconData icon,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -311,14 +336,18 @@ class _FinanceInputScreenState extends State<FinanceInputScreen> {
           decoration: InputDecoration(
             hintText: hint,
             prefixText: 'Rp ',
-            prefixStyle: const TextStyle(
+            prefixStyle: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDark ? AppColors.darkTextPrimary : Colors.black87,
             ),
             suffixIcon: Icon(icon, color: color.withOpacity(0.5)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

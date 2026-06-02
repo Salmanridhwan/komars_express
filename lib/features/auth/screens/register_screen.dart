@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/widgets/komars_button.dart';
 import '../db/user_dao.dart';
 import '../models/user_model.dart';
 
@@ -80,8 +81,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(width: 8),
                   const Icon(
-                    Icons.eco_rounded,
-                    color: AppColors.primaryGreen,
+                    Icons.restaurant_rounded,
+                    color: AppColors.secondaryOrange,
                     size: 32,
                   ),
                 ],
@@ -169,22 +170,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _register,
-                  child: _loading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(AppStrings.register),
-                ),
+              KomarsPrimaryButton(
+                label: AppStrings.register,
+                icon: Icons.person_add_rounded,
+                onPressed: _loading ? null : _register,
+                isLoading: _loading,
               ),
               const SizedBox(height: 24),
               Row(
@@ -200,7 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       AppStrings.login,
                       style: TextStyle(
                         fontFamily: 'Outfit',
-                        color: AppColors.primaryGreen,
+                        color: AppColors.secondaryOrange,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

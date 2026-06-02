@@ -117,6 +117,8 @@ class _FarmMitraFormScreenState extends State<FarmMitraFormScreen> {
         ),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isSaving
           ? const Center(child: CircularProgressIndicator())

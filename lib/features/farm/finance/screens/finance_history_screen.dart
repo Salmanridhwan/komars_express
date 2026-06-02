@@ -4,6 +4,7 @@ import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:komars_express/core/routes/app_routes.dart';
 import '../models/financial_record_model.dart';
 import '../widgets/profit_loss_card.dart';
 import 'finance_input_screen.dart';
@@ -11,9 +12,13 @@ import 'finance_detail_screen.dart';
 
 class FinanceHistoryScreen extends StatefulWidget {
   final int userId;
+  final bool embedded;
 
-  const FinanceHistoryScreen({Key? key, required this.userId})
-    : super(key: key);
+  const FinanceHistoryScreen({
+    super.key,
+    required this.userId,
+    this.embedded = false,
+  });
 
   @override
   State<FinanceHistoryScreen> createState() => _FinanceHistoryScreenState();
@@ -123,16 +128,48 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Riwayat Keuangan',
-          style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: !widget.embedded,
+        leading: widget.embedded
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
+                  }
+                },
+                tooltip: 'Kembali ke Komars Express',
+              )
+            : null,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.account_balance_wallet_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Keuangan Tani',
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
         elevation: 0,
-        centerTitle: true,
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -148,14 +185,18 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? AppColors.darkCard : Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkDivider : Colors.transparent,
+                        ),
                         boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
+                          if (!isDark)
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
                         ],
                       ),
                       child: Column(
@@ -332,14 +373,18 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDark ? AppColors.darkCard : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isDark ? AppColors.darkDivider : Colors.grey.shade100,
+                                  ),
                                   boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
+                                    if (!isDark)
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.02),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
                                   ],
                                 ),
                                 child: ListTile(
@@ -391,7 +436,10 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                                         : record.notes!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 12),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade600,
+                                    ),
                                   ),
                                   trailing: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,

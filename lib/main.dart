@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Komars App',
           debugShowCheckedModeBanner: false,
-          
+
           // Theme configurations
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,

@@ -4,6 +4,7 @@ import 'package:komars_express/core/database/database_helper.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/constants/pref_keys.dart';
 import 'package:komars_express/core/routes/app_routes.dart';
+import 'package:komars_express/core/widgets/komars_navbar.dart';
 import '../../../auth/db/user_dao.dart';
 import '../../../auth/models/user_model.dart';
 import '../models/farm_package_model.dart';
@@ -45,7 +46,7 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
       case 1:
         return _buildKeuangan();
       case 2:
-        return FarmHarvestSaleScreen(userId: _user?.id ?? 0);
+        return FarmHarvestSaleScreen(userId: _user?.id ?? 0, embedded: true);
       case 3:
         return const ProfileScreen(embedded: true);
       default:
@@ -54,76 +55,40 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
   }
 
   Widget _buildKeuangan() {
-    return FinanceHistoryScreen(userId: _user?.id ?? 0);
+    return FinanceHistoryScreen(userId: _user?.id ?? 0, embedded: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: _buildBody(),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -4),
-            ),
-          ],
-          border: Border(
-            top: BorderSide(
-              color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
-              width: 1,
-            ),
+      bottomNavigationBar: KomarsNavBar(
+        selectedIndex: _tabIndex,
+        onTap: (i) => setState(() => _tabIndex = i),
+        colorStart: AppColors.secondaryOrange,
+        colorEnd: AppColors.secondaryOrangeLight,
+        items: const [
+          KomarsNavItem(
+            icon: Icons.home_outlined,
+            activeIcon: Icons.home_rounded,
+            label: 'Beranda',
           ),
-        ),
-        child: NavigationBar(
-          height: 64,
-          elevation: 0,
-          selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
-          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-          indicatorColor: AppColors.primaryGreen.withValues(alpha: 0.15),
-          destinations: const [
-            NavigationDestination(
-              key: ValueKey('farm_nav_home'),
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(
-                Icons.home_rounded,
-                color: AppColors.primaryGreen,
-              ),
-              label: 'Beranda',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_nav_finance'),
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              selectedIcon: Icon(
-                Icons.account_balance_wallet_rounded,
-                color: AppColors.primaryGreen,
-              ),
-              label: 'Keuangan',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_nav_sell'),
-              icon: Icon(Icons.sell_outlined),
-              selectedIcon: Icon(
-                Icons.sell_rounded,
-                color: AppColors.primaryGreen,
-              ),
-              label: 'Jual Panen',
-            ),
-            NavigationDestination(
-              key: ValueKey('farm_nav_profile'),
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(
-                Icons.person_rounded,
-                color: AppColors.primaryGreen,
-              ),
-              label: 'Profil',
-            ),
-          ],
-        ),
+          KomarsNavItem(
+            icon: Icons.account_balance_wallet_outlined,
+            activeIcon: Icons.account_balance_wallet_rounded,
+            label: 'Keuangan',
+          ),
+          KomarsNavItem(
+            icon: Icons.sell_outlined,
+            activeIcon: Icons.sell_rounded,
+            label: 'Jual Panen',
+          ),
+          KomarsNavItem(
+            icon: Icons.person_outline_rounded,
+            activeIcon: Icons.person_rounded,
+            label: 'Profil',
+          ),
+        ],
       ),
     );
   }
@@ -187,7 +152,17 @@ class _FarmBerandaState extends State<_FarmBeranda> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
+            }
+          },
+          tooltip: 'Kembali ke Komars Express',
+        ),
         title: Row(
           children: [
             Container(
@@ -402,13 +377,13 @@ class _FarmBerandaState extends State<_FarmBeranda> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryGreen
-              : AppColors.primaryGreenSurface,
+              ? AppColors.secondaryOrange
+              : AppColors.secondaryOrangeSurface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? AppColors.primaryGreen
-                : AppColors.primaryGreen.withValues(alpha: 0.2),
+                ? AppColors.secondaryOrange
+                : AppColors.secondaryOrange.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -421,7 +396,7 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                 fontFamily: 'Outfit',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : AppColors.primaryGreenDark,
+                color: isSelected ? Colors.white : AppColors.secondaryOrangeDark,
               ),
             ),
           ],
@@ -465,12 +440,12 @@ class _PackageCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: AppColors.primaryGreenSurface,
+                color: AppColors.secondaryOrangeSurface,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
                 Icons.agriculture_rounded,
-                color: AppColors.primaryGreen,
+                color: AppColors.secondaryOrange,
                 size: 30,
               ),
             ),
@@ -507,7 +482,7 @@ class _PackageCard extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreenSurface,
+                          color: AppColors.secondaryOrangeSurface,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -516,7 +491,7 @@ class _PackageCard extends StatelessWidget {
                             fontFamily: 'Outfit',
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.primaryGreenDark,
+                            color: AppColors.secondaryOrangeDark,
                           ),
                         ),
                       ),

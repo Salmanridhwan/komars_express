@@ -38,26 +38,19 @@ class _SplashScreenState extends State<SplashScreen>
     final onboardingDone = prefs.getBool(PrefKeys.isOnboardingDone) ?? false;
     final token = prefs.getString(PrefKeys.userSessionToken) ?? '';
     final role = prefs.getString(PrefKeys.userRole) ?? 'customer';
-    final selectedApp = prefs.getString(PrefKeys.selectedApp) ?? '';
 
     if (!onboardingDone) {
+      // Belum pernah onboarding
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
-    } else if (token.isEmpty || selectedApp.isEmpty) {
+    } else if (token.isEmpty) {
+      // Belum login
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
-      // Restore session ke dashboard yang sesuai
+      // Restore session — selalu ke Express (Farm diakses dari dalam beranda Express)
       if (role == 'admin') {
-        if (selectedApp == 'farm') {
-          Navigator.pushReplacementNamed(context, AppRoutes.farmAdminDashboard);
-        } else {
-          Navigator.pushReplacementNamed(context, AppRoutes.expressAdminDashboard);
-        }
+        Navigator.pushReplacementNamed(context, AppRoutes.expressAdminDashboard);
       } else {
-        if (selectedApp == 'farm') {
-          Navigator.pushReplacementNamed(context, AppRoutes.farmCustomerHome);
-        } else {
-          Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
-        }
+        Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
       }
     }
   }
@@ -91,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen>
                       border: Border.all(
                           color: Colors.white.withValues(alpha: 0.4), width: 2),
                     ),
-                    child: const Icon(Icons.eco_rounded,
+                    child: const Icon(Icons.restaurant_rounded,
                         size: 56, color: Colors.white),
                   ),
                   const SizedBox(height: 24),

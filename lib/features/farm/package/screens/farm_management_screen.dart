@@ -157,6 +157,8 @@ class _FarmManagementScreenState extends State<FarmManagementScreen> {
         ),
         backgroundColor: AppColors.primaryGreen,
         foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton(

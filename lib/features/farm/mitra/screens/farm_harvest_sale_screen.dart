@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:komars_express/core/database/database_helper.dart';
+import 'package:komars_express/core/routes/app_routes.dart';
 import '../models/mitra_model.dart';
 import '../models/harvest_sale_model.dart';
 
@@ -9,7 +10,12 @@ import '../models/harvest_sale_model.dart';
 /// User memilih mitra, mengisi data hasil panen, dan melihat riwayat penjualan.
 class FarmHarvestSaleScreen extends StatefulWidget {
   final int userId;
-  const FarmHarvestSaleScreen({super.key, required this.userId});
+  final bool embedded;
+  const FarmHarvestSaleScreen({
+    super.key,
+    required this.userId,
+    this.embedded = true,
+  });
 
   @override
   State<FarmHarvestSaleScreen> createState() => _FarmHarvestSaleScreenState();
@@ -35,7 +41,20 @@ class _FarmHarvestSaleScreenState extends State<FarmHarvestSaleScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: !widget.embedded,
+        leading: widget.embedded
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushReplacementNamed(context, AppRoutes.expressCustomerHome);
+                  }
+                },
+                tooltip: 'Kembali ke Komars Express',
+              )
+            : null,
         title: Row(
           children: [
             Container(
@@ -211,7 +230,7 @@ class _SellFormTabState extends State<_SellFormTab> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.primaryGreenSurface,
+                color: isDark ? AppColors.primaryGreen.withOpacity(0.15) : AppColors.primaryGreenSurface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                     color: AppColors.primaryGreen.withValues(alpha: 0.3)),
@@ -221,13 +240,13 @@ class _SellFormTabState extends State<_SellFormTab> {
                   const Icon(Icons.info_outline_rounded,
                       color: AppColors.primaryGreen, size: 20),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Hasil panen Anda akan dikirim ke mitra untuk dikonfirmasi. Pantau status di tab Riwayat.',
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 12,
-                        color: AppColors.primaryGreenDark,
+                        color: isDark ? AppColors.primaryGreenLight : AppColors.primaryGreenDark,
                       ),
                     ),
                   ),
@@ -245,7 +264,7 @@ class _SellFormTabState extends State<_SellFormTab> {
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.darkCard : Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: isDark ? AppColors.darkDivider : Colors.grey.shade300),
                 ),
                 child: const Text(
                   'Belum ada mitra tersedia',

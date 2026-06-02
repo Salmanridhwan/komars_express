@@ -20,12 +20,16 @@ class TableGridSelector extends StatefulWidget {
   /// Called when the user taps an available tile.
   final ValueChanged<TableModel> onTableSelected;
 
+  /// Whether to show the availability legend (green/blue/red dots).
+  final bool showLegend;
+
   const TableGridSelector({
     super.key,
     required this.tables,
     required this.reservedTableIds,
     required this.onTableSelected,
     this.selectedTableId,
+    this.showLegend = true,
   });
 
   @override
@@ -60,8 +64,10 @@ class _TableGridSelectorState extends State<TableGridSelector> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Legend
-        _buildLegend(),
-        const SizedBox(height: 16),
+        if (widget.showLegend) ...[
+          _buildLegend(),
+          const SizedBox(height: 16),
+        ],
 
         for (final location in orderedLocations) ...[
           _buildLocationSection(location, grouped[location]!),
@@ -220,6 +226,18 @@ class _TableTileState extends State<_TableTile>
       textColor = AppColors.statusSuccess;
     }
 
+    IconData locationIcon;
+    switch (widget.table.location) {
+      case 'VIP':
+        locationIcon = Icons.star_rounded;
+        break;
+      case 'Outdoor':
+        locationIcon = Icons.park_rounded;
+        break;
+      default:
+        locationIcon = Icons.chair_rounded;
+    }
+
     return AnimatedScale(
       scale: 1.0,
       duration: const Duration(milliseconds: 120),
@@ -242,7 +260,7 @@ class _TableTileState extends State<_TableTile>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.table_restaurant_rounded,
+                  locationIcon,
                   color: textColor,
                   size: 24,
                 ),

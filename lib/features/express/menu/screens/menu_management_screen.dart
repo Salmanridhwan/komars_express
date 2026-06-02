@@ -169,6 +169,8 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       automaticallyImplyLeading: !widget.embedded,
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.secondaryOrange,
       foregroundColor: Colors.white,
+      iconTheme: const IconThemeData(color: Colors.white),
+      actionsIconTheme: const IconThemeData(color: Colors.white),
       elevation: 0,
       title: const Text(
         'Kelola Menu',
@@ -433,41 +435,50 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                                   ],
                                 ),
                               ),
-                              // Action Buttons
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  InkWell(
-                                    onTap: () => _openFormModal(item: item),
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.secondaryOrange.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.edit_outlined,
-                                        size: 16,
-                                        color: AppColors.secondaryOrange,
-                                      ),
+                              PopupMenuButton<String>(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                icon: const Icon(Icons.more_vert_rounded, color: Colors.grey),
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _openFormModal(item: item);
+                                  } else if (value == 'delete') {
+                                    _deleteMenu(item);
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) => [
+                                  const PopupMenuItem<String>(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit_outlined, size: 18, color: AppColors.secondaryOrange),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Edit Hidangan',
+                                          style: TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  InkWell(
-                                    onTap: () => _deleteMenu(item),
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.deleteRed.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 16,
-                                        color: AppColors.deleteRed,
-                                      ),
+                                  const PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.deleteRed),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Hapus Hidangan',
+                                          style: TextStyle(
+                                            fontFamily: 'Outfit',
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.deleteRed,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
