@@ -9,6 +9,7 @@ import '../../../auth/models/user_model.dart';
 import '../models/farm_package_model.dart';
 import '../../../home/screens/profile_screen.dart';
 import '../../../farm/mitra/screens/farm_harvest_sale_screen.dart';
+import '../../../farm/finance/screens/finance_history_screen.dart';
 
 /// Home utama pelanggan Komars Farm.
 /// Memiliki 3 tab: Beranda, Keuangan, Profil.
@@ -53,71 +54,7 @@ class _FarmHomeScreenState extends State<FarmHomeScreen> {
   }
 
   Widget _buildKeuangan() {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('Keuangan Mitra'),
-        backgroundColor: AppColors.primaryGreen,
-        foregroundColor: Colors.white,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_rounded,
-              size: 72,
-              color: AppColors.primaryGreen.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Pencatatan Keuangan',
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Fitur keuangan mitra tani',
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryGreen,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 14,
-                ),
-              ),
-              onPressed: () => Navigator.pushNamed(
-                context,
-                AppRoutes.farmFinanceHistory,
-                arguments: _user?.id ?? 1,
-              ),
-              icon: const Icon(Icons.history_rounded),
-              label: const Text(
-                'Riwayat Keuangan',
-                style: TextStyle(
-                  fontFamily: 'Outfit',
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return FinanceHistoryScreen(userId: _user?.id ?? 0);
   }
 
   @override
