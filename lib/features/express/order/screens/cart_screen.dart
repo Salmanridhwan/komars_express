@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../models/cart_manager.dart';
+import '../widgets/cart_drag_handle.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -15,9 +16,14 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final _cart = CartManager.instance;
+  bool _isReorderMode = false;
 
   void _refresh() {
     if (mounted) setState(() {});
+  }
+
+  void _toggleReorderMode() {
+    setState(() => _isReorderMode = !_isReorderMode);
   }
 
   @override
@@ -29,7 +35,24 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         title: const Text('Keranjang Belanja'),
         actions: [
-          if (items.isNotEmpty)
+          if (items.isNotEmpty) ...[
+            // Tombol toggle reorder mode (long-press + drag)
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: IconButton(
+                key: ValueKey(_isReorderMode),
+                icon: Icon(
+                  _isReorderMode
+                      ? Icons.check_circle_rounded
+                      : Icons.swap_vert_rounded,
+                  color: _isReorderMode
+                      ? AppColors.secondaryOrange
+                      : Colors.grey,
+                ),
+                onPressed: _toggleReorderMode,
+                tooltip: _isReorderMode ? 'Selesai Mengatur' : 'Atur Urutan',
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.delete_sweep_rounded, color: AppColors.deleteRed),
               onPressed: () {
@@ -51,6 +74,7 @@ class _CartScreenState extends State<CartScreen> {
                         onPressed: () {
                           _cart.clear();
                           Navigator.pop(context);
+                          _isReorderMode = false;
                           _refresh();
                         },
                         child: const Text('Kosongkan'),
@@ -61,6 +85,7 @@ class _CartScreenState extends State<CartScreen> {
               },
               tooltip: 'Kosongkan Keranjang',
             ),
+          ],
         ],
       ),
       body: items.isEmpty
@@ -99,23 +124,61 @@ class _CartScreenState extends State<CartScreen> {
             )
           : Column(
               children: [
+                // Hint banner saat mode reorder aktif
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  height: _isReorderMode ? 36 : 0,
+                  color: AppColors.secondaryOrange.withValues(alpha: 0.1),
+                  child: _isReorderMode
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.swap_vert_rounded,
+                                size: 14, color: AppColors.secondaryOrange),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Tahan & geser (≡) untuk mengubah urutan',
+                              style: TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.secondaryOrange
+                                    .withValues(alpha: 0.9),
+                              ),
+                            ),
+                          ],
+                        )
+                      : null,
+                ),
                 Expanded(
-                  child: ListView.builder(
+                  child: ReorderableListView.builder(
                     padding: const EdgeInsets.all(20),
+                    // Mode reorder: aktifkan drag saat long-press
+                    buildDefaultDragHandles: false,
+                    onReorder: (oldIndex, newIndex) {
+                      _cart.reorder(oldIndex, newIndex);
+                      _refresh();
+                    },
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
                       final menu = item.menuItem;
 
                       return Container(
+                        key: Key('cart-item-${menu.id}'),
                         margin: const EdgeInsets.only(bottom: 16),
                         child: Dismissible(
-                          key: Key('cart-item-${menu.id}'),
-                          direction: DismissDirection.endToStart,
+                          key: Key('dismissible-${menu.id}'),
+                          // Nonaktifkan swipe dismiss saat mode reorder agar gesture tidak bertabrakan
+                          direction: _isReorderMode
+                              ? DismissDirection.none
+                              : DismissDirection.endToStart,
                           onDismissed: (direction) {
                             _cart.removeItem(menu);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${menu.name} dihapus dari keranjang')),
+                              SnackBar(
+                                  content: Text(
+                                      '${menu.name} dihapus dari keranjang')),
                             );
                             _refresh();
                           },
@@ -138,7 +201,9 @@ class _CartScreenState extends State<CartScreen> {
                               color: isDark ? AppColors.darkCard : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isDark ? AppColors.darkDivider : AppColors.lightDivider,
+                                color: isDark
+                                    ? AppColors.darkDivider
+                                    : AppColors.lightDivider,
                               ),
                             ),
                             child: Row(
@@ -152,33 +217,41 @@ class _CartScreenState extends State<CartScreen> {
                                     color: Colors.grey[300],
                                     child: menu.imagePath != null &&
                                             menu.imagePath!.isNotEmpty
-                                        ? (kIsWeb || menu.imagePath!.startsWith('http')
+                                        ? (kIsWeb ||
+                                                menu.imagePath!
+                                                    .startsWith('http')
                                             ? Image.network(
                                                 menu.imagePath!,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) =>
-                                                    const Icon(Icons.broken_image_rounded),
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    const Icon(Icons
+                                                        .broken_image_rounded),
                                               )
                                             : Image.file(
                                                 File(menu.imagePath!),
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stackTrace) =>
-                                                    const Icon(Icons.broken_image_rounded),
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    const Icon(Icons
+                                                        .broken_image_rounded),
                                               ))
                                         : Icon(
-                                            menu.category.toLowerCase() == 'drink'
+                                            menu.category.toLowerCase() ==
+                                                    'drink'
                                                 ? Icons.local_drink_rounded
                                                 : Icons.restaurant_rounded,
                                             color: Colors.grey[600],
                                           ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
+                                const SizedBox(width: 12),
 
                                 // Title and price details
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         menu.name,
@@ -216,54 +289,72 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                 ),
 
-                                // Quantity adjustment buttons
-                                Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            _cart.decrementItem(menu);
-                                            _refresh();
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey[300]?.withValues(alpha: 0.5),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(Icons.remove, size: 20),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                                          child: Text(
-                                            '${item.quantity}',
-                                            style: const TextStyle(
-                                              fontFamily: 'Outfit',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            _cart.addItem(menu);
-                                            _refresh();
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(10),
-                                            decoration: const BoxDecoration(
-                                              color: AppColors.primaryGreen,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(Icons.add, size: 20, color: Colors.white),
-                                          ),
-                                        ),
-                                      ],
+                                // Quantity adjustment buttons ATAU Drag Handle
+                                if (_isReorderMode)
+                                  // Mode reorder: tampilkan drag handle (custom drawn)
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: CartDragHandle(
+                                      isReorderMode: _isReorderMode,
+                                      color: isDark
+                                          ? Colors.grey.shade400
+                                          : Colors.grey.shade500,
                                     ),
-                                  ],
-                                ),
+                                  )
+                                else
+                                  // Mode normal: tampilkan tombol +/-
+                                  Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              _cart.decrementItem(menu);
+                                              _refresh();
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[300]
+                                                    ?.withValues(alpha: 0.5),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.remove,
+                                                  size: 20),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12),
+                                            child: Text(
+                                              '${item.quantity}',
+                                              style: const TextStyle(
+                                                fontFamily: 'Outfit',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              _cart.addItem(menu);
+                                              _refresh();
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: const BoxDecoration(
+                                                color: AppColors.primaryGreen,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.add,
+                                                  size: 20,
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),

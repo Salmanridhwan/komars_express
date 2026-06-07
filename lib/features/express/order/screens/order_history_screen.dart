@@ -159,7 +159,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: widget.embedded
+                      ? const EdgeInsets.fromLTRB(20, 12, 20, 100)
+                      : const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   itemCount: _orders.length,
                   itemBuilder: (context, index) {
                     final order = _orders[index];

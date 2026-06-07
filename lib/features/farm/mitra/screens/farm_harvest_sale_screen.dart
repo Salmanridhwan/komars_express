@@ -90,8 +90,8 @@ class _FarmHarvestSaleScreenState extends State<FarmHarvestSaleScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _SellFormTab(userId: widget.userId),
-          _SaleHistoryTab(userId: widget.userId),
+          _SellFormTab(userId: widget.userId, embedded: widget.embedded),
+          _SaleHistoryTab(userId: widget.userId, embedded: widget.embedded),
         ],
       ),
     );
@@ -102,7 +102,8 @@ class _FarmHarvestSaleScreenState extends State<FarmHarvestSaleScreen>
 
 class _SellFormTab extends StatefulWidget {
   final int userId;
-  const _SellFormTab({required this.userId});
+  final bool embedded;
+  const _SellFormTab({required this.userId, this.embedded = true});
 
   @override
   State<_SellFormTab> createState() => _SellFormTabState();
@@ -220,7 +221,9 @@ class _SellFormTabState extends State<_SellFormTab> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: widget.embedded
+          ? const EdgeInsets.fromLTRB(20, 20, 20, 100)
+          : const EdgeInsets.all(20),
       child: Form(
         key: _formKey,
         child: Column(
@@ -587,7 +590,8 @@ class _SellFormTabState extends State<_SellFormTab> {
 
 class _SaleHistoryTab extends StatefulWidget {
   final int userId;
-  const _SaleHistoryTab({required this.userId});
+  final bool embedded;
+  const _SaleHistoryTab({required this.userId, this.embedded = true});
 
   @override
   State<_SaleHistoryTab> createState() => _SaleHistoryTabState();
@@ -648,7 +652,9 @@ class _SaleHistoryTabState extends State<_SaleHistoryTab> {
       onRefresh: _load,
       color: AppColors.primaryGreen,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: widget.embedded
+            ? const EdgeInsets.fromLTRB(16, 16, 16, 100)
+            : const EdgeInsets.all(16),
         itemCount: _sales.length,
         itemBuilder: (ctx, i) => _SaleCard(sale: _sales[i]),
       ),
