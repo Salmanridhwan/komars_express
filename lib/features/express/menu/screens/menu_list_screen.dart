@@ -179,7 +179,9 @@ class _MenuListScreenState extends State<MenuListScreen> {
                         ),
                       )
                     : GridView.builder(
-                        padding: const EdgeInsets.all(20),
+                        padding: widget.embedded
+                            ? const EdgeInsets.fromLTRB(20, 20, 20, 100)
+                            : const EdgeInsets.all(20),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16,

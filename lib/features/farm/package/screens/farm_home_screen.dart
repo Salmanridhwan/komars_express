@@ -11,6 +11,7 @@ import '../models/farm_package_model.dart';
 import '../../../home/screens/profile_screen.dart';
 import '../../../farm/mitra/screens/farm_harvest_sale_screen.dart';
 import '../../../farm/finance/screens/finance_history_screen.dart';
+import '../widgets/farm_progress_arc.dart';
 
 /// Home utama pelanggan Komars Farm.
 /// Memiliki 3 tab: Beranda, Keuangan, Profil.
@@ -108,6 +109,8 @@ class _FarmBerandaState extends State<_FarmBeranda> {
   late DatabaseHelper _dbHelper;
   String _selectedFarmType = 'unggas';
   List<FarmPackage> _packages = [];
+  Map<String, int> _packagesByType = {};
+  int _totalPackages = 0;
   bool _isLoading = true;
 
   @override
@@ -126,12 +129,27 @@ class _FarmBerandaState extends State<_FarmBeranda> {
   Future<void> _loadPackages() async {
     setState(() => _isLoading = true);
     try {
+      // Load filtered packages for current view
       final packages = await _dbHelper.farmPackageDao.getPackagesByFarmType(
         _selectedFarmType,
       );
+
+      // Load all packages to calculate arc distribution
+      final allTypes = ['unggas', 'ikan', 'sayur'];
+      final Map<String, int> byType = {};
+      int total = 0;
+      for (final type in allTypes) {
+        final pkgs =
+            await _dbHelper.farmPackageDao.getPackagesByFarmType(type);
+        byType[type] = pkgs.length;
+        total += pkgs.length;
+      }
+
       if (mounted)
         setState(() {
           _packages = packages;
+          _packagesByType = byType;
+          _totalPackages = total;
           _isLoading = false;
         });
     } catch (_) {
@@ -210,7 +228,7 @@ class _FarmBerandaState extends State<_FarmBeranda> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Hero Banner ────────────────────────────────────────────
+                  // ── Hero Banner ─────────────────────────────────────────
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
@@ -220,23 +238,51 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Halo, $firstName! 🌱',
-                          style: const TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Kelola usaha tani Anda hari ini',
-                          style: TextStyle(
-                            fontFamily: 'Outfit',
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.88),
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Teks sambutan di kiri
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Halo, $firstName! 🌱',
+                                    style: const TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Kelola usaha tani Anda hari ini',
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(alpha: 0.88),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '$_totalPackages paket tersedia',
+                                    style: TextStyle(
+                                      fontFamily: 'Outfit',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Progress Arc di kanan — Custom Drawing Widget
+                            FarmProgressArc(
+                              totalPackages: _totalPackages,
+                              packagesByType: _packagesByType,
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         // Quick finance access
@@ -358,7 +404,7 @@ class _FarmBerandaState extends State<_FarmBeranda> {
                               );
                             },
                           ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),

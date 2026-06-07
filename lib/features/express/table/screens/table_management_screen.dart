@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../db/table_dao.dart';
 import '../models/table_model.dart';
-import '../widgets/table_grid_selector.dart';
+import '../widgets/index.dart';
 
 class TableManagementScreen extends StatefulWidget {
   /// Jika true, screen ditampilkan sebagai tab (tanpa AppBar & FAB sendiri).
@@ -421,15 +421,14 @@ class _TableManagementScreenState extends State<TableManagementScreen>
                         ],
                       ),
                 // ─── Tab 2: Floor Map (Custom Widget) ────────────────────────
-                SingleChildScrollView(
+                Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                   child: activeTables.isEmpty
                       ? const Center(child: Text('Tidak ada meja aktif'))
-                      : TableGridSelector(
+                      : TableFloorMap(
                           tables: activeTables,
                           reservedTableIds: const {},
                           selectedTableId: null,
-                          showLegend: false,
                           onTableSelected: (t) => _showTableActions(t),
                         ),
                 ),

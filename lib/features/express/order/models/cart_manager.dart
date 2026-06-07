@@ -65,6 +65,14 @@ class CartManager {
     _notify();
   }
 
+  /// Reorder items after a drag-to-reorder action.
+  void reorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) newIndex--;
+    final item = _items.removeAt(oldIndex);
+    _items.insert(newIndex, item);
+    _notify();
+  }
+
   void clear() {
     _items.clear();
     _notify();

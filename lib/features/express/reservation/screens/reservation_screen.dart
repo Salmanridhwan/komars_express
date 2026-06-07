@@ -8,7 +8,7 @@ import '../../reservation/db/reservation_dao.dart';
 import '../../reservation/models/reservation_model.dart';
 import '../../table/db/table_dao.dart';
 import '../../table/models/table_model.dart';
-import '../../table/widgets/table_grid_selector.dart';
+import '../../table/widgets/index.dart';
 
 class ReservationScreen extends StatefulWidget {
   const ReservationScreen({super.key});
@@ -761,7 +761,7 @@ class _TimeCard extends StatelessWidget {
   }
 }
 
-class _StepTable extends StatelessWidget {
+class _StepTable extends StatefulWidget {
   final bool isDark, loading;
   final List<TableModel> tables;
   final Set<int> reservedIds;
@@ -779,6 +779,13 @@ class _StepTable extends StatelessWidget {
   });
 
   @override
+  State<_StepTable> createState() => _StepTableState();
+}
+
+class _StepTableState extends State<_StepTable> {
+  bool _showMap = true;
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,25 +800,59 @@ class _StepTable extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Denah lantai restoran Komars Express',
+          'Tentukan meja tempat Anda menyantap hidangan lezat',
           style: TextStyle(
             fontFamily: 'Outfit',
             fontSize: 13,
-            color: isDark
+            color: widget.isDark
                 ? AppColors.darkTextSecondary
                 : AppColors.lightTextSecondary,
           ),
         ),
-        const SizedBox(height: 20),
-        loading
-            ? const Center(child: CircularProgressIndicator())
-            // ─── Custom Widget (PRD §5.2.C) ─────────────────────────────────
-            : TableGridSelector(
-                tables: tables,
-                reservedTableIds: reservedIds,
-                selectedTableId: selectedId,
-                onTableSelected: onSelected,
+        const SizedBox(height: 16),
+        Center(
+          child: SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment<bool>(
+                value: false,
+                label: Text('Tampilan Grid'),
+                icon: Icon(Icons.grid_view_rounded, size: 16),
               ),
+              ButtonSegment<bool>(
+                value: true,
+                label: Text('Denah Lantai'),
+                icon: Icon(Icons.map_rounded, size: 16),
+              ),
+            ],
+            selected: {_showMap},
+            onSelectionChanged: (set) {
+              setState(() {
+                _showMap = set.first;
+              });
+            },
+            style: ButtonStyle(
+              textStyle: WidgetStateProperty.all(
+                const TextStyle(fontFamily: 'Outfit', fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        widget.loading
+            ? const Center(child: CircularProgressIndicator())
+            : _showMap
+                ? TableFloorMap(
+                    tables: widget.tables,
+                    reservedTableIds: widget.reservedIds,
+                    selectedTableId: widget.selectedId,
+                    onTableSelected: widget.onSelected,
+                  )
+                : TableGridSelector(
+                    tables: widget.tables,
+                    reservedTableIds: widget.reservedIds,
+                    selectedTableId: widget.selectedId,
+                    onTableSelected: widget.onSelected,
+                  ),
       ],
     );
   }

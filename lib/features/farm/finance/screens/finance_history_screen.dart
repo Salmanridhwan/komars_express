@@ -6,7 +6,7 @@ import 'package:komars_express/core/constants/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:komars_express/core/routes/app_routes.dart';
 import '../models/financial_record_model.dart';
-import '../widgets/profit_loss_card.dart';
+import '../widgets/index.dart';
 import 'finance_input_screen.dart';
 import 'finance_detail_screen.dart';
 
@@ -177,7 +177,9 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
               onRefresh: _loadRecords,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24),
+                padding: widget.embedded
+                    ? const EdgeInsets.fromLTRB(24, 24, 24, 100)
+                    : const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -307,6 +309,14 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                       loss: _totalLoss,
                       netProfit: _totalProfit,
                       title: 'Ringkasan Keuangan',
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Custom Drawing: Donut Chart
+                    FinancialDonutChart(
+                      income: _totalIncome,
+                      expense: _totalExpense,
+                      loss: _totalLoss,
                     ),
                     const SizedBox(height: 24),
 
