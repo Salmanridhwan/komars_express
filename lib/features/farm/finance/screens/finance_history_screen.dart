@@ -29,7 +29,6 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
   late SharedPreferences _prefs;
 
   String _selectedFarmType = 'unggas';
-  String _filterPeriod = 'weekly';
   List<FinancialRecord> _records = [];
   bool _isLoading = true;
 
@@ -48,7 +47,6 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
     _dbHelper = DatabaseHelper.instance;
     _prefs = await SharedPreferences.getInstance();
     _selectedFarmType = _prefs.getString(PrefKeys.selectedFarmType) ?? 'unggas';
-    _filterPeriod = _prefs.getString(PrefKeys.financeFilterPeriod) ?? 'weekly';
     await _loadRecords();
   }
 
@@ -62,7 +60,7 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
         _selectedFarmType,
       );
 
-      // Calculate totals
+      // Hitung total semua catatan
       _totalIncome = records.fold(0, (sum, r) => sum + r.income);
       _totalExpense = records.fold(0, (sum, r) => sum + r.expense);
       _totalLoss = records.fold(0, (sum, r) => sum + r.loss);
@@ -200,100 +198,44 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                         ],
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Jenis Tani',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
+                          const Text(
+                            'Jenis Tani',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          DropdownButton<String>(
+                            value: _selectedFarmType.toLowerCase(),
+                            isExpanded: true,
+                            underline: const SizedBox(),
+                            items: ['unggas', 'ikan', 'sayur']
+                                .map(
+                                  (type) => DropdownMenuItem(
+                                    value: type,
+                                    child: Text(
+                                      type[0].toUpperCase() +
+                                          type.substring(1),
+                                      style: const TextStyle(
+                                        fontFamily: 'Outfit',
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    DropdownButton<String>(
-                                      value: _selectedFarmType.toLowerCase(),
-                                      isExpanded: true,
-                                      underline: const SizedBox(),
-                                      items: ['unggas', 'ikan', 'sayur']
-                                          .map(
-                                            (type) => DropdownMenuItem(
-                                              value: type,
-                                              child: Text(
-                                                type[0].toUpperCase() +
-                                                    type.substring(1),
-                                                style: const TextStyle(
-                                                  fontFamily: 'Outfit',
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (value) {
-                                        if (value != null) {
-                                          setState(
-                                            () => _selectedFarmType = value,
-                                          );
-                                          _prefs.setString(
-                                            PrefKeys.selectedFarmType,
-                                            value,
-                                          );
-                                          _loadRecords();
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Periode',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    DropdownButton<String>(
-                                      value: _filterPeriod,
-                                      isExpanded: true,
-                                      underline: const SizedBox(),
-                                      items: ['weekly', 'monthly']
-                                          .map(
-                                            (period) => DropdownMenuItem(
-                                              value: period,
-                                              child: Text(
-                                                period[0].toUpperCase() +
-                                                    period.substring(1),
-                                                style: const TextStyle(
-                                                  fontFamily: 'Outfit',
-                                                ),
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (value) {
-                                        if (value != null) {
-                                          setState(() => _filterPeriod = value);
-                                          _prefs.setString(
-                                            PrefKeys.financeFilterPeriod,
-                                            value,
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => _selectedFarmType = value);
+                                _prefs.setString(
+                                  PrefKeys.selectedFarmType,
+                                  value,
+                                );
+                                _loadRecords();
+                              }
+                            },
                           ),
                         ],
                       ),

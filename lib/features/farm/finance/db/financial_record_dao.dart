@@ -12,7 +12,7 @@ class FinancialRecordDao {
       final id = await _database.insert(
         'financial_records',
         record.toJson(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        conflictAlgorithm: ConflictAlgorithm.abort,
       );
       return id;
     } catch (e) {

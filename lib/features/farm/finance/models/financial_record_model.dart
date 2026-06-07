@@ -26,9 +26,9 @@ class FinancialRecord {
   });
 
   // Convert model to JSON for database storage
+  // id hanya disertakan jika bukan 0 (record yang sudah ada)
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final map = <String, dynamic>{
       'user_id': userId,
       'farm_type': farmType,
       'record_date': recordDate,
@@ -40,6 +40,9 @@ class FinancialRecord {
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
+    // Hanya sertakan id saat update (id > 0)
+    if (id != 0) map['id'] = id;
+    return map;
   }
 
   // Create model from database row

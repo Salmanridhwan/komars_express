@@ -43,7 +43,7 @@ class DatabaseHelper {
       return await factory.openDatabase(
         'komars.db',
         options: OpenDatabaseOptions(
-          version: 4,
+          version: 5,
           onConfigure: _onConfigure,
           onCreate: _onCreate,
           onUpgrade: _onUpgrade,
@@ -54,7 +54,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'komars.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onConfigure: _onConfigure,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
@@ -122,6 +122,45 @@ class DatabaseHelper {
           FOREIGN KEY(package_id) REFERENCES farm_packages(id) ON DELETE CASCADE
         )
       ''');
+    }
+
+    // v4 -> v5: hapus UNIQUE constraint pada financial_records
+    // agar bisa menambahkan lebih dari 1 catatan per kategori per tanggal
+    if (oldVersion < 5) {
+      // Nonaktifkan FK sementara agar DDL bisa berjalan
+      await db.execute('PRAGMA foreign_keys = OFF');
+      final batch = db.batch();
+      batch.execute('DROP TABLE IF EXISTS financial_records_new');
+      batch.execute('''
+        CREATE TABLE financial_records_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          farm_type TEXT NOT NULL,
+          record_date TEXT NOT NULL,
+          income REAL NOT NULL,
+          expense REAL NOT NULL,
+          loss REAL NOT NULL,
+          net_profit REAL NOT NULL,
+          notes TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      ''');
+      batch.execute('''
+        INSERT INTO financial_records_new
+          (id, user_id, farm_type, record_date, income, expense, loss,
+           net_profit, notes, created_at, updated_at)
+        SELECT id, user_id, farm_type, record_date, income, expense, loss,
+               net_profit, notes, created_at, updated_at
+        FROM financial_records
+      ''');
+      batch.execute('DROP TABLE financial_records');
+      batch.execute(
+          'ALTER TABLE financial_records_new RENAME TO financial_records');
+      await batch.commit(noResult: true);
+      // Aktifkan kembali FK
+      await db.execute('PRAGMA foreign_keys = ON');
     }
   }
 
@@ -244,8 +283,7 @@ class DatabaseHelper {
         notes TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-        UNIQUE(user_id, farm_type, record_date) ON CONFLICT REPLACE
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     ''');
 
