@@ -451,26 +451,43 @@ class _FinanceHistoryScreenState extends State<FinanceHistoryScreen> {
                                       color: isDark ? AppColors.darkTextSecondary : Colors.grey.shade600,
                                     ),
                                   ),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        'Rp ${record.income.toStringAsFixed(0)}',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
-                                        ),
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            'Rp ${record.income.toStringAsFixed(0)}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${isProfit ? '+' : ''}Rp ${record.netProfit.toStringAsFixed(0)}',
+                                            style: TextStyle(
+                                              fontFamily: 'Outfit',
+                                              fontWeight: FontWeight.w900,
+                                              color: isProfit
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        '${isProfit ? '+' : ''}Rp ${record.netProfit.toStringAsFixed(0)}',
-                                        style: TextStyle(
-                                          fontFamily: 'Outfit',
-                                          fontWeight: FontWeight.w900,
-                                          color: isProfit
-                                              ? Colors.green
-                                              : Colors.red,
+                                      const SizedBox(width: 8),
+                                      IconButton(
+                                        onPressed: () => _showDeleteConfirmation(record),
+                                        icon: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Colors.red,
+                                          size: 20,
                                         ),
+                                        tooltip: 'Hapus catatan',
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
                                       ),
                                     ],
                                   ),
