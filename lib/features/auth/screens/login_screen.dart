@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/pref_keys.dart';
 import '../../../core/routes/app_routes.dart';
-import '../../../core/widgets/komars_button.dart';
 import '../db/user_dao.dart';
 
 /// Halaman Login Komars Express.
@@ -29,6 +28,10 @@ class _LoginScreenState extends State<LoginScreen>
 
   late AnimationController _fadeCtrl;
   late Animation<double> _fadeAnim;
+
+  // Branding color — deep forest green
+  static const _brandGreen = Color(0xFF1B5E20);
+  static const _brandGreenLight = Color(0xFF2E7D32);
 
   @override
   void initState() {
@@ -91,95 +94,475 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final headerHeight = screenHeight * 0.36;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : const Color(0xFFFFFAF5),
+      backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
       body: FadeTransition(
         opacity: _fadeAnim,
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // ─── Header Banner (Express Branding) ──────────────────────
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(28, 48, 28, 40),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.expressGradient,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(36),
-                      bottomRight: Radius.circular(36),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.secondaryOrange.withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // ─── Hero Image Header ──────────────────────────────────
+              SizedBox(
+                height: headerHeight,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Background Image
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32),
                       ),
-                    ],
-                  ),
+                      child: Image.asset(
+                        'assets/images/login_header.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0xFF1B5E20),
+                                  Color(0xFF2E7D32),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(32),
+                                bottomRight: Radius.circular(32),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    // Dark overlay for text readability
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(32),
+                          bottomRight: Radius.circular(32),
+                        ),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.15),
+                            Colors.black.withValues(alpha: 0.55),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Branding text over image
+                    Positioned(
+                      left: 28,
+                      right: 28,
+                      bottom: 32,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Logo icon
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.restaurant_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // App name
+                          const Text(
+                            'Komars Express',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // Tagline
+                          Text(
+                            'Platform F&B · Pesan, Bayar & Reservasi',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 13,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Farm badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.eco_rounded,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Termasuk akses Komars Farm',
+                                  style: TextStyle(
+                                    fontFamily: 'Outfit',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.95),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ─── Login Form ────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                child: Form(
+                  key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Logo Container
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.restaurant_rounded,
-                          color: Colors.white,
-                          size: 38,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Komars Express',
-                        style: TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
                       Text(
-                        'Platform F&B · Pesan, Bayar & Reservasi',
+                        'Masuk ke Akun Anda',
                         style: TextStyle(
                           fontFamily: 'Outfit',
-                          fontSize: 13,
-                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : const Color(0xFF1A1A1A),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      // Farm sub-label hint
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Satu akun untuk Express & Farm',
+                        style: TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 14,
+                          color: isDark
+                              ? AppColors.darkTextSecondary
+                              : const Color(0xFF888888),
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(20),
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Email Field
+                      TextFormField(
+                        key: const ValueKey('login_email_field'),
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        cursorColor: _brandGreen,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 15,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.agriculture_rounded,
-                              color: Colors.white,
-                              size: 14,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: TextStyle(
+                            fontFamily: 'Outfit',
+                            color: isDark
+                                ? AppColors.darkTextHint
+                                : const Color(0xFF999999),
+                          ),
+                          floatingLabelStyle: const TextStyle(
+                            color: _brandGreen,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Outfit',
+                          ),
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : const Color(0xFF888888),
+                            size: 20,
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? AppColors.darkCard
+                              : const Color(0xFFF7F7F7),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? AppColors.darkDivider
+                                  : const Color(0xFFE8E8E8),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Termasuk akses Komars Farm',
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: _brandGreen,
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: AppColors.statusCancelled,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: AppColors.statusCancelled,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Wajib diisi';
+                          if (!v.contains('@')) return 'Email tidak valid';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Password Field
+                      TextFormField(
+                        key: const ValueKey('login_password_field'),
+                        controller: _passCtrl,
+                        obscureText: _obscure,
+                        cursorColor: _brandGreen,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 15,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Kata Sandi',
+                          labelStyle: TextStyle(
+                            fontFamily: 'Outfit',
+                            color: isDark
+                                ? AppColors.darkTextHint
+                                : const Color(0xFF999999),
+                          ),
+                          floatingLabelStyle: const TextStyle(
+                            color: _brandGreen,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Outfit',
+                          ),
+                          prefixIcon: Icon(
+                            Icons.lock_outline_rounded,
+                            color: isDark
+                                ? AppColors.darkTextSecondary
+                                : const Color(0xFF888888),
+                            size: 20,
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? AppColors.darkCard
+                              : const Color(0xFFF7F7F7),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? AppColors.darkDivider
+                                  : const Color(0xFFE8E8E8),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: _brandGreen,
+                              width: 2,
+                            ),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: AppColors.statusCancelled,
+                            ),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: AppColors.statusCancelled,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: const Color(0xFF999999),
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Wajib diisi';
+                          if (v.length < 6) return 'Min. 6 karakter';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 28),
+
+                      // Login Button — deep green
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          key: const ValueKey('login_submit_btn'),
+                          onPressed: _loading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _brandGreen,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey.shade300,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: _loading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor:
+                                        AlwaysStoppedAnimation(Colors.white),
+                                  ),
+                                )
+                              : const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.login_rounded, size: 20),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Masuk',
+                                      style: TextStyle(
+                                        fontFamily: 'Outfit',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Register link
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Belum punya akun? ',
+                            style: TextStyle(
+                              fontFamily: 'Outfit',
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : const Color(0xFF888888),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.expressRegister,
+                            ),
+                            child: const Text(
+                              'Daftar Sekarang',
                               style: TextStyle(
                                 fontFamily: 'Outfit',
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: _brandGreen,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Admin Hint Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.darkCard
+                              : const Color(0xFFF0F7F0),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.darkDivider
+                                : _brandGreen.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.admin_panel_settings_outlined,
+                              size: 20,
+                              color: isDark
+                                  ? AppColors.darkTextSecondary
+                                  : _brandGreenLight,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Akses Admin: Gunakan email admin@gmail.com dan kata sandi admin123',
+                                style: TextStyle(
+                                  fontFamily: 'Outfit',
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppColors.darkTextSecondary
+                                      : const Color(0xFF555555),
+                                  height: 1.4,
+                                ),
                               ),
                             ),
                           ],
@@ -188,206 +571,8 @@ class _LoginScreenState extends State<LoginScreen>
                     ],
                   ),
                 ),
-
-                // ─── Login Form ──────────────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 32,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Masuk ke Akun Anda',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                fontFamily: 'Outfit',
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Satu akun untuk Express & Farm',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary,
-                                  ),
-                        ),
-                        const SizedBox(height: 28),
-
-                        // Email Field
-                        TextFormField(
-                          key: const ValueKey('login_email_field'),
-                          controller: _emailCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                          cursorColor: AppColors.secondaryOrange,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            floatingLabelStyle: const TextStyle(
-                              color: AppColors.secondaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.email_outlined,
-                              color: AppColors.secondaryOrange,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: AppColors.secondaryOrange,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Wajib diisi';
-                            if (!v.contains('@')) return 'Email tidak valid';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Password Field
-                        TextFormField(
-                          key: const ValueKey('login_password_field'),
-                          controller: _passCtrl,
-                          obscureText: _obscure,
-                          cursorColor: AppColors.secondaryOrange,
-                          decoration: InputDecoration(
-                            labelText: 'Kata Sandi',
-                            floatingLabelStyle: const TextStyle(
-                              color: AppColors.secondaryOrange,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.lock_outline_rounded,
-                              color: AppColors.secondaryOrange,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: AppColors.secondaryOrange,
-                                width: 2,
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscure
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: AppColors.secondaryOrange
-                                    .withValues(alpha: 0.7),
-                              ),
-                              onPressed: () =>
-                                  setState(() => _obscure = !_obscure),
-                            ),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Wajib diisi';
-                            if (v.length < 6) return 'Min. 6 karakter';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 28),
-
-                        // Login Button
-                        KomarsPrimaryButton(
-                          key: const ValueKey('login_submit_btn'),
-                          label: 'Masuk',
-                          icon: Icons.login_rounded,
-                          onPressed: _loading ? null : _login,
-                          isLoading: _loading,
-                        ),
-
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Belum punya akun? ',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.lightTextSecondary,
-                                  ),
-                            ),
-                            GestureDetector(
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.expressRegister,
-                              ),
-                              child: const Text(
-                                'Daftar Sekarang',
-                                style: TextStyle(
-                                  fontFamily: 'Outfit',
-                                  color: AppColors.secondaryOrange,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        // Admin Hint Box
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkCard
-                                : AppColors.secondaryOrangeSurface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.darkDivider
-                                  : AppColors.secondaryOrange
-                                      .withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.admin_panel_settings_outlined,
-                                size: 20,
-                                color: isDark
-                                    ? AppColors.secondaryOrangeLight
-                                    : AppColors.secondaryOrange,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Akses Admin: Gunakan email admin@gmail.com dan kata sandi admin123',
-                                  style: TextStyle(
-                                    fontFamily: 'Outfit',
-                                    fontSize: 12,
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.secondaryOrangeDark,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,7 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/pref_keys.dart';
 import '../../../core/routes/app_routes.dart';
 
@@ -12,48 +11,72 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
   final PageController _pageCtrl = PageController();
   int _currentPage = 0;
+  Timer? _autoScrollTimer;
 
-  // Gradients for morphing background based on page
-  final List<List<Color>> _backgroundGradients = [
-    [const Color(0xFF1B5E20), const Color(0xFF2E7D32), const Color(0xFF0F5132)], // Forest Green (Ecosystem)
-    [const Color(0xFFE65100), const Color(0xFFEF6C00), const Color(0xFFD84315)], // Warm Orange (Express F&B)
-    [const Color(0xFF0F5132), const Color(0xFF198754), const Color(0xFF20C997)], // Emerald Teal (Mitra Farm)
+  // Onboarding data with image paths
+  final List<_OnboardingSlide> _slides = const [
+    _OnboardingSlide(
+      imagePath: 'assets/onboarding/onboarding_1.png',
+      title: 'Selamat Datang di Komars',
+      subtitle:
+          'Ekosistem agri-kuliner yang menghubungkan petani lokal\ndengan pengalaman kuliner premium.',
+    ),
+    _OnboardingSlide(
+      imagePath: 'assets/onboarding/onboarding_2.png',
+      title: 'Pesan Makanan Segar',
+      subtitle:
+          'Nikmati hidangan lezat yang bahan-bahannya langsung\ndari mitra tani Komars Farm.',
+    ),
+    _OnboardingSlide(
+      imagePath: 'assets/onboarding/onboarding_3.png',
+      title: 'Dukung Petani Lokal',
+      subtitle:
+          'Setiap pesanan Anda mendukung keberlanjutan pertanian\nlokal dan ekosistem ramah lingkungan.',
+    ),
   ];
 
-  final List<Color> _brandColors = [
-    AppColors.primaryGreen,
-    AppColors.secondaryOrange,
-    AppColors.primaryGreenLight,
-  ];
-
-  late List<_OnboardingData> _pages;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pages = const [
-      _OnboardingData(
-        icon: Icons.eco_rounded,
-        title: AppStrings.onboarding1Title,
-        subtitle: AppStrings.onboarding1Subtitle,
-        badges: ['🌱 Ekosistem Lokal', '🤝 Kemitraan Adil', '📈 Terintegrasi'],
-      ),
-      _OnboardingData(
-        icon: Icons.restaurant_menu_rounded,
-        title: AppStrings.onboarding2Title,
-        subtitle: AppStrings.onboarding2Subtitle,
-        badges: ['🍽️ Menu Lezat', '📱 Bayar QRIS', '🪑 Reservasi Meja'],
-      ),
-      _OnboardingData(
-        icon: Icons.handshake_rounded,
-        title: AppStrings.onboarding3Title,
-        subtitle: AppStrings.onboarding3Subtitle,
-        badges: ['💰 Investasi Tani', '🌾 Hasil Melimpah', '📊 Transparan'],
-      ),
-    ];
+
+    // Fade-in animation for bottom content
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+
+    // Auto-scroll every 4 seconds
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted) return;
+      final nextPage = (_currentPage + 1) % _slides.length;
+      _pageCtrl.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _resetAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _startAutoScroll();
   }
 
   Future<void> _finish() async {
@@ -65,293 +88,274 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _pageCtrl.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background Layer
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 550),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: _backgroundGradients[_currentPage],
-              ),
-            ),
-          ),
-          
-          // Content Layer
-          SafeArea(
-            child: Column(
-              children: [
-                // Main Swipeable Onboarding Cards
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageCtrl,
-                    itemCount: _pages.length,
-                    onPageChanged: (i) => setState(() => _currentPage = i),
-                    itemBuilder: (context, i) => _OnboardingPage(
-                      data: _pages[i],
-                      isActive: i == _currentPage,
-                    ),
-                  ),
-                ),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final imageHeight = screenHeight * 0.58;
 
-                // Bottom Navigation & Actions Controls
-                Container(
-                  padding: const EdgeInsets.fromLTRB(28, 12, 28, 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Stretch Page Indicators
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_pages.length, (i) {
-                        final isActive = i == _currentPage;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          width: isActive ? 28 : 8,
-                          height: 8,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // ─── Top: Image Carousel ─────────────────────────────────────
+          SizedBox(
+            height: imageHeight,
+            child: Stack(
+              children: [
+                // Photo PageView
+                PageView.builder(
+                  controller: _pageCtrl,
+                  itemCount: _slides.length,
+                  onPageChanged: (i) {
+                    setState(() => _currentPage = i);
+                    _resetAutoScroll();
+                    // Animate text content
+                    _fadeController.reset();
+                    _fadeController.forward();
+                  },
+                  itemBuilder: (context, i) {
+                    return Image.asset(
+                      _slides[i].imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: imageHeight,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback gradient if image not found
+                        return Container(
                           decoration: BoxDecoration(
-                            color: isActive
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 28),
-                    
-                    // Action Buttons (Skip / Next / Get Started)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Left: Skip Button (hides on last page)
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 300),
-                          opacity: _currentPage < _pages.length - 1 ? 1.0 : 0.0,
-                          child: IgnorePointer(
-                            ignoring: _currentPage >= _pages.length - 1,
-                            child: TextButton(
-                              onPressed: _finish,
-                              child: const Text(
-                                AppStrings.skip,
-                                style: TextStyle(
-                                  fontFamily: 'Outfit',
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFF1B5E20).withValues(alpha: 0.8),
+                                const Color(0xFF2E7D32),
+                              ],
                             ),
                           ),
-                        ),
-                        
-                        // Right: Next / Get Started Button
-                        SizedBox(
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_currentPage < _pages.length - 1) {
-                                _pageCtrl.nextPage(
-                                  duration: const Duration(milliseconds: 400),
-                                  curve: Curves.easeInOut,
-                                );
-                              } else {
-                                _finish();
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size.zero,
-                              backgroundColor: Colors.white,
-                              foregroundColor: _brandColors[_currentPage],
-                              padding: EdgeInsets.symmetric(
-                                horizontal: _currentPage == _pages.length - 1 ? 32 : 24,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(26),
-                              ),
-                              elevation: 4,
-                            ),
-                            child: Row(
+                          child: Center(
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  _currentPage == _pages.length - 1 
-                                      ? AppStrings.getStarted 
-                                      : AppStrings.next,
-                                  style: const TextStyle(
-                                    fontFamily: 'Outfit',
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
                                 Icon(
-                                  _currentPage == _pages.length - 1 
-                                      ? Icons.rocket_launch_rounded 
-                                      : Icons.arrow_forward_rounded,
-                                  size: 18,
+                                  i == 0
+                                      ? Icons.eco_rounded
+                                      : i == 1
+                                          ? Icons.restaurant_menu_rounded
+                                          : Icons.handshake_rounded,
+                                  size: 80,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Gambar akan ditampilkan di sini',
+                                  style: TextStyle(
+                                    fontFamily: 'Outfit',
+                                    fontSize: 14,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.6),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OnboardingPage extends StatelessWidget {
-  final _OnboardingData data;
-  final bool isActive;
-
-  const _OnboardingPage({
-    required this.data,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // ─── Onboarding Icon Container ───────────────────────────
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.18),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.35),
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Icon(
-                data.icon,
-                size: 64,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 36),
-          
-          // ─── Premium Translucent Card ─────────────────────────────────────
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.22),
-                width: 1.5,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Badge Chips
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  alignment: WrapAlignment.center,
-                  children: data.badges.map((badge) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          width: 0.8,
-                        ),
-                      ),
-                      child: Text(
-                        badge,
-                        style: const TextStyle(
-                          fontFamily: 'Outfit',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+                        );
+                      },
                     );
-                  }).toList(),
+                  },
                 ),
-                
-                const SizedBox(height: 20),
-                
-                // Title Text
-                Text(
-                  data.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    height: 1.25,
+
+                // Bottom gradient fade (image to white transition)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 100,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(alpha: 0.6),
+                          Colors.white,
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ),
+                    ),
                   ),
                 ),
-                
-                const SizedBox(height: 12),
-                
-                // Subtitle Description
-                Text(
-                  data.subtitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.88),
-                    height: 1.55,
+
+                // Page Indicators (centered, over the image)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 24,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_slides.length, (i) {
+                      final isActive = i == _currentPage;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 350),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: isActive ? 24 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? const Color(0xFF1B5E20)
+                              : const Color(0xFF1B5E20).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
                   ),
                 ),
               ],
             ),
           ),
+
+          // ─── Bottom: Text + Buttons ──────────────────────────────────
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+
+                    // Title
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 350),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0.0, 0.15),
+                              end: Offset.zero,
+                            ).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        _slides[_currentPage].title,
+                        key: ValueKey<int>(_currentPage),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1B5E20),
+                          height: 1.3,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Subtitle
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 350),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                      child: Text(
+                        _slides[_currentPage].subtitle,
+                        key: ValueKey<String>(
+                            '${_currentPage}_subtitle'),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'Outfit',
+                          fontSize: 14,
+                          color: Color(0xFF666666),
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // ─── "Masuk" Full-Width Button ──────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: _finish,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1B5E20),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          shadowColor: Colors.transparent,
+                        ),
+                        child: const Text(
+                          'Masuk',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ─── "Lewati tahap ini" Link ────────────────────
+                    GestureDetector(
+                      onTap: _finish,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          'Lewati tahap ini',
+                          style: TextStyle(
+                            fontFamily: 'Outfit',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF888888),
+                            decoration: TextDecoration.underline,
+                            decorationColor: Color(0xFFBBBBBB),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
-      ),
       ),
     );
   }
 }
 
-class _OnboardingData {
-  final IconData icon;
+class _OnboardingSlide {
+  final String imagePath;
   final String title;
   final String subtitle;
-  final List<String> badges;
 
-  const _OnboardingData({
-    required this.icon,
+  const _OnboardingSlide({
+    required this.imagePath,
     required this.title,
     required this.subtitle,
-    required this.badges,
   });
 }
